@@ -8,7 +8,7 @@ from peewee import MySQLDatabase, Model
 
 deferred_db = MySQLDatabase()
 
-class HIDBModel(Model):
+class CRMModel(Model):
     """
     Generic HOMEINFO-DB Model
     """
