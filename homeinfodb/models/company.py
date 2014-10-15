@@ -1,5 +1,5 @@
 """
-Tables for HOMEINFO's CRM
+Company related models for HOMEINFO's CRM
 """
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'

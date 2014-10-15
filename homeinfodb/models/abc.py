@@ -1,5 +1,5 @@
 """
-Database static configuration
+Abstract base classes for HOMEINFO's ORM database
 """
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'

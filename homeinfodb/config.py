@@ -4,13 +4,7 @@ Database static configuration
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 
-from peewee import MySQLDatabase, Model
+from peewee import MySQLDatabase
 
-deferred_db = MySQLDatabase()
-
-class CRMModel(Model):
-    """
-    Generic HOMEINFO-DB Model
-    """
-    class Meta:
-        database = deferred_db
+deferred_db = MySQLDatabase('homeinfo', host='localhost', user='homeinfodb', 
+                            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W')
