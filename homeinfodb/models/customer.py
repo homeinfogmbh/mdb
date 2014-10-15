@@ -7,12 +7,15 @@ __date__ = '18.09.2014'
 __all__ = ['Customer']
 
 from .abc import CRMModel
-from peewee import CharField, TextField
+from .company import Company
+from peewee import CharField, ForeignKeyField
 
 class Customer(CRMModel):
     """
     CRM's customer(s)
     """
-    cid = CharField(7)  # A unique customer ID
-    name = TextField()  # A representative name
-    type = TextField()  # A type like 'bank' or 'realtor', etc.
+    cid = CharField(7)
+    """A unique customer ID"""
+    company = ForeignKeyField(Company, related_name='customers')
+    """A related company"""
+    # TODO: Add other stuff like merchants etc.

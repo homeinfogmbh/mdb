@@ -14,6 +14,9 @@ class Department(CRMModel):
     """
     Departments of companies
     """
-    customer = ForeignKeyField(Company, related_name='departments')
-    name = TextField()  # A representative name
-    type = TextField()  # A type like 'IT', 'customer service', etc.
+    company = ForeignKeyField(Company, related_name='departments')
+    """The company, this department belongs to"""
+    name = TextField()
+    """A representative name"""
+    type = TextField()
+    """A type like 'IT', 'customer service', etc."""
