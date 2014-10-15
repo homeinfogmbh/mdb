@@ -7,13 +7,13 @@ __date__ = '18.09.2014'
 __all__ = ['Department']
 
 from .abc import CRMModel
-from .customer import Customer
+from .company import Company
 from peewee import ForeignKeyField, TextField
 
 class Department(CRMModel):
     """
     Departments of companies
     """
-    customer = ForeignKeyField(Customer, related_name='departments')
+    customer = ForeignKeyField(Company, related_name='departments')
     name = TextField()  # A representative name
     type = TextField()  # A type like 'IT', 'customer service', etc.
