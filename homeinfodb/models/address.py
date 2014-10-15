@@ -16,7 +16,7 @@ class Address(CRMModel):
     """
     street = TextField(null=True)
     house_number = CharField(45, null=True)
-    zip = IntegerField(11, null=True)       # ZIP code
+    zip = IntegerField(null=True)       # ZIP code
     po_box = TextField(null=True)           # Post box
     city = TextField()
     country = ForeignKeyField(Country)

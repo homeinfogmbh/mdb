@@ -25,5 +25,5 @@ class CustomerLegacy(CRMModel):
     """
     Legacy model for existing customer entries
     """
-    cid = IntegerField(11)
+    cid = IntegerField()
     name = TextField()
