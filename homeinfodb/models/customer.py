@@ -8,25 +8,14 @@ __all__ = ['Customer']
 
 from .abc import CRMModel
 from .company import Company
-from peewee import ForeignKeyField, TextField,\
-    PrimaryKeyField
+from peewee import ForeignKeyField, IntegerField
 
 class Customer(CRMModel):
     """
     CRM's customer(s)
     """
-    cid = PrimaryKeyField()
+    cid = IntegerField()
     """A unique customer ID"""
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
     # TODO: Add other stuff like merchants etc.
-    
-    
-class CustomerLegacy(CRMModel):
-    """
-    Legacy model for existing customer entries
-    """
-    cid = PrimaryKeyField()
-    """A unique customer ID"""
-    name = TextField()
-    """The customer's name"""
