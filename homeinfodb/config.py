@@ -6,6 +6,6 @@ __date__ = '18.09.2014'
 
 from peewee import MySQLDatabase
 
-deferred_db = MySQLDatabase('homeinfo', host='mysql.homeinfo.de', 
+database = MySQLDatabase('homeinfo', host='mysql.homeinfo.de', 
                             user='homeinfo', 
                             passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W')
