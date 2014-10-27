@@ -6,6 +6,9 @@ __date__ = '18.09.2014'
 
 from peewee import MySQLDatabase
 
-database = MySQLDatabase('homeinfo', host='mysql.homeinfo.de', 
-                            user='homeinfo', 
-                            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W')
+DB = 'homeinfo'
+HOST = 'mysql.homeinfo.de'
+USER = 'homeinfo'
+PASSWD = 'Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W'
+
+database = MySQLDatabase(DB, host=HOST, user=USER, passwd=PASSWD)
