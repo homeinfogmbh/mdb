@@ -14,3 +14,7 @@ setup(
 	description='ORM for HOMEINFO\'s CRM database',
 	long_description=open('README.txt').read(),
 )
+
+from homeinfodb import __tables__
+for table in __tables__:
+	table.create_table(fail_silently=True)

@@ -8,13 +8,13 @@ __all__ = ['Customer']
 
 from .abc import CRMModel
 from .company import Company
-from peewee import ForeignKeyField, IntegerField
+from peewee import ForeignKeyField, PrimaryKeyField
 
 class Customer(CRMModel):
     """
     CRM's customer(s)
     """
-    cid = IntegerField()
+    cid = PrimaryKeyField()
     """A unique customer ID"""
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""

@@ -6,4 +6,7 @@ __date__ = '18.09.2014'
 
 __all__ = ['Customer']
 
-from .models import Customer
+from homeinfodb.models import *
+
+__tables__ = [Customer, Country, State, Address, Company, Department, Employee]
+"""XXX: Order is important here!"""
