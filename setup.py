@@ -17,4 +17,5 @@ setup(
 
 from homeinfodb import __tables__
 for table in __tables__:
+	print('Creating table', table)
 	table.create_table(fail_silently=True)

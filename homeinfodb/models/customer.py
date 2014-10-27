@@ -8,14 +8,22 @@ __all__ = ['Customer']
 
 from .abc import CRMModel
 from .company import Company
-from peewee import ForeignKeyField, PrimaryKeyField
+from peewee import ForeignKeyField
 
 class Customer(CRMModel):
     """
     CRM's customer(s)
     """
-    cid = PrimaryKeyField()
-    """A unique customer ID"""
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
     # TODO: Add other stuff like merchants etc.
+    
+    @property
+    def cid(self):
+        """Returns the Customer ID"""
+        return self.id
+    
+    @cid.setter
+    def cid (self, cid):
+        """Sets the Customer ID"""
+        self.id = cid

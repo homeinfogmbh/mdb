@@ -8,5 +8,5 @@ __all__ = ['Customer']
 
 from homeinfodb.models import *
 
-__tables__ = [Customer, Country, State, Address, Company, Department, Employee]
+__tables__ = [Country, State, Address, Company, Department, Employee, Customer]
 """XXX: Order is important here!"""
