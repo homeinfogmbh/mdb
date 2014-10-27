@@ -27,3 +27,8 @@ class Customer(CRMModel):
     def cid (self, cid):
         """Sets the Customer ID"""
         self.id = cid
+        
+    @property
+    def name(self):
+        """Returns the customer's name"""
+        return self.company.name
