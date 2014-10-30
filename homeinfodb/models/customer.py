@@ -31,4 +31,9 @@ class Customer(CRMModel):
     @property
     def name(self):
         """Returns the customer's name"""
-        return self.company.name if self.company else ''
+        return str(self.company.name) if self.company else ''
+    
+    def __str__(self):
+        """Returns a string representation of the customer"""
+        return (self.name + ' (' if self.name else '') \
+            + str(self.cid) + (')' if self.name else '')
