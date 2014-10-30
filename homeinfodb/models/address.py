@@ -8,15 +8,21 @@ __all__ = ['Address']
 
 from .abc import CRMModel
 from homeinfodb.models.geo import Country
-from peewee import CharField, TextField, IntegerField, ForeignKeyField    
+from peewee import CharField, ForeignKeyField    
 
 class Address(CRMModel):
     """
     Address data
     """
-    street = TextField(null=True)
-    house_number = CharField(45, null=True)
-    zip = IntegerField(null=True)       # ZIP code
-    po_box = TextField(null=True)           # Post box
-    city = TextField()
-    country = ForeignKeyField(Country)
+    street = CharField(64, null=True)
+    """The street's name"""
+    house_number = CharField(8, null=True)
+    """The house number"""
+    zip = CharField(32, null=True)
+    """The zip code"""
+    po_box = CharField(32, null=True)
+    """The po box number"""
+    city = CharField(64)
+    """The name of the respective city"""
+    country = ForeignKeyField(Country, db_column='country', null=True)
+    """The country of the address"""
