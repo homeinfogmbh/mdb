@@ -18,6 +18,6 @@ class CRMModel(Model):
     Generic HOMEINFO-DB Model
     """
     class Meta:
-        database = PooledMySQLDatabase(DB, host=HOST, user=USER, 
-                                       passwd=PASSWD, threadlocals=True)
+        database = PooledMySQLDatabase(DB, host=HOST, user=USER, passwd=PASSWD)
+        database.get_conn().ping(True)
         schema = DB
