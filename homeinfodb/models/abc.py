@@ -2,7 +2,7 @@
 Abstract base classes for HOMEINFO's ORM database
 """
 from peewee import Model
-from playhouse.pool import PooledMySQLDatabase
+from mysqlhacks import ProcessSaveMySQLDatabase
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -18,6 +18,7 @@ class CRMModel(Model):
     Generic HOMEINFO-DB Model
     """
     class Meta:
-        database = PooledMySQLDatabase(DB, host=HOST, user=USER, passwd=PASSWD)
+        database = ProcessSaveMySQLDatabase(DB, host=HOST, 
+                                            user=USER, passwd=PASSWD)
         database.get_conn().ping(True)
         schema = DB
