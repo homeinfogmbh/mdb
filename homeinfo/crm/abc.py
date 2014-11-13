@@ -9,7 +9,7 @@ __date__ = '18.09.2014'
 __all__ = ['CRMModel']
 
 DB = 'homeinfo_crm'
-HOST = 'mysql.homeinfo.de'
+HOST = 'localhost'
 USER = 'homeinfo_crm'
 PASSWD = 'Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W'
 
