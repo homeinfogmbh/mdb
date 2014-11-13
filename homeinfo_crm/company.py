@@ -1,14 +1,14 @@
 """
 Company related models for HOMEINFO's CRM
 """
-__author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
-__date__ = '18.09.2014'
-
-__all__ = ['Company', 'Department', 'Employee']
-
 from .abc import CRMModel
 from .address import Address
 from peewee import CharField, ForeignKeyField
+
+__author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
+__date__ = '18.09.2014'
+__all__ = ['Company', 'Department', 'Employee']
+
 
 class Company(CRMModel):
     """
@@ -20,21 +20,21 @@ class Company(CRMModel):
     """The employee's address"""
     annotation = CharField(256, null=True)
     """Type like 'bank' or 'realtor', etc."""
-    
+
 
 class Department(CRMModel):
     """
     Departments of companies
     """
-    company = ForeignKeyField(Company, db_column='company', 
+    company = ForeignKeyField(Company, db_column='company',
                               related_name='departments')
     """The company, this department belongs to"""
     name = CharField(64)
     """A representative name"""
     type = CharField(64, null=True)
     """A type like 'IT', 'customer service', etc."""
-    
-    
+
+
 class Employee(CRMModel):
     """
     Employees
