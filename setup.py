@@ -3,20 +3,20 @@
 from setuptools import setup
 
 setup(
-    name='homeinfo-crm',
+    name='homeinfo',
     version='1.0',
     author='Richard Neumann',
     author_email='mail@richard-neumann.de',
     install_requires=['peewee',
                       'mysqlhacks'],
-    packages=['homeinfo_crm',
-              'homeinfo_crm.models'],
+    packages=['homeinfo',
+              'homeinfo.crm'],
     license=open('LICENSE.txt').read(),
-    description='ORM for HOMEINFO\'s CRM database',
+    description='HOMEINFO ORM database root',
     long_description=open('README.txt').read(),
 )
 
-from homeinfodb import __tables__
+from homeinfo import __tables__
 for table in __tables__:
     print('Creating table', table)
     table.create_table(fail_silently=True)
