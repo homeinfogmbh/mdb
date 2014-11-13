@@ -2,7 +2,7 @@
 Address related models for HOMEINFO's CRM
 """
 from .abc import CRMModel
-from homeinfodb.models.geo import Country
+from .geo import Country
 from peewee import CharField, ForeignKeyField
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
