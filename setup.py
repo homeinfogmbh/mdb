@@ -11,6 +11,7 @@ setup(
               'mysqlhacks'],
     packages=['homeinfo',
               'homeinfo.crm'],
+    data_files=[('/usr/local/etc', ['files/etc/homeinfo.conf'])],
     license=open('LICENSE.txt').read(),
     description='HOMEINFO ORM database root',
     long_description=open('README.txt').read(),

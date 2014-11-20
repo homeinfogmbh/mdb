@@ -8,10 +8,9 @@ from .customer import Customer
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '15.10.2014'
-__all__ = ['Address',
-           'Company', 'Department', 'Employee',
-           'Country', 'State',
-           'Customer']
+__all__ = ['Address', 'Company', 'Department', 'Employee',
+           'Country', 'State', 'Customer']
 
-__tables__ = [Country, State, Address, Company, Department, Employee, Customer]
+__tables__ = [Country, State, Address, Company,
+              Department, Employee, Customer]
 """XXX: Order is important here!"""
