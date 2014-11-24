@@ -35,5 +35,9 @@ class Customer(CRMModel):
 
     def __str__(self):
         """Returns a string representation of the customer"""
+        return str(self.cid)
+
+    def __repr__(self):
+        """Returns a string representation of the customer"""
         return (self.name + ' (' if self.name else '') \
             + str(self.cid) + (')' if self.name else '')
