@@ -17,7 +17,11 @@ setup(
     long_description=open('README.txt').read(),
 )
 
-from homeinfo.crm import __tables__
-for table in __tables__:
-    print('Creating table', table)
-    table.create_table(fail_silently=True)
+try:
+    from homeinfo.crm import __tables__
+except:
+    print('Cannot import __tables__')
+else:
+    for table in __tables__:
+        print('Creating table', table)
+        table.create_table(fail_silently=True)
