@@ -13,13 +13,30 @@ class Country(CRMModel):
     """
     Country data
     """
-    iso = CharField(2)
+    _iso = CharField(2, db_column='iso')
     """An, *exactly* two characters long ISO 3166-2 country code
     example: 'DE'"""
     name = CharField(64)
-    """The complete countrie's name"""
+    """The complete country's name"""
     original_name = CharField(64, null=True)
     """The countrie's name in its original language"""
+
+    @property
+    def iso(self):
+        """Returns the ISO code"""
+        return self._iso
+
+    @iso.setter
+    def iso(self, iso):
+        """Sets the ISO code"""
+        if len(iso) is 2:
+            self._iso = iso
+        else:
+            raise ValueError('ISO code must be exactly two characters long')
+
+    def __str__(self):
+        """Converts the country to a string"""
+        return self.name
 
 
 class State(CRMModel):
@@ -29,13 +46,26 @@ class State(CRMModel):
     country = ForeignKeyField(Country, db_column='country',
                               related_name='states')
     """The country this state belongs to"""
-    iso = CharField(2)
+    _iso = CharField(2, db_column='iso')
     """An *exactly* two characters long ISO 3166-2 state code
     examples: 'NI' or 'NW'"""
     name = CharField(64)
-    """The complete countrie's name"""
+    """The complete state's name"""
+
+    @property
+    def iso(self):
+        """Returns the ISO code"""
+        return self._iso
+
+    @iso.setter
+    def iso(self, iso):
+        """Sets the ISO code"""
+        if len(iso) is 2:
+            self._iso = iso
+        else:
+            raise ValueError('ISO code must be exactly two characters long')
 
     @property
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code"""
-        return self.country.iso + '-' + self.iso
+        return '-'.join([self.country.iso, self.iso])

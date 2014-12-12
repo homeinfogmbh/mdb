@@ -21,6 +21,13 @@ class Company(CRMModel):
     annotation = CharField(256, null=True)
     """Type like 'bank' or 'realtor', etc."""
 
+    @property
+    def employees(self):
+        """Returns the company's employees"""
+        for department in self.departments:  # related_name from Department
+            for employee in department.staff:
+                yield employee
+
 
 class Department(CRMModel):
     """

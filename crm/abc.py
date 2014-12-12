@@ -1,7 +1,7 @@
 """
 Abstract base classes for HOMEINFO's ORM database
 """
-from ..config import crm
+from .config import db
 from peewee import Model, MySQLDatabase
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
@@ -14,9 +14,9 @@ class CRMModel(Model):
     Generic HOMEINFO-DB Model
     """
     class Meta:
-        database = MySQLDatabase(crm.get('db'),
-                                 host=crm.get('host'),
-                                 user=crm.get('user'),
-                                 passwd=crm.get('passwd'))
+        database = MySQLDatabase(db.get('db'),
+                                 host=db.get('host'),
+                                 user=db.get('user'),
+                                 passwd=db.get('passwd'))
         database.get_conn().ping(True)
-        schema = crm.get('db')
+        schema = db.get('db')

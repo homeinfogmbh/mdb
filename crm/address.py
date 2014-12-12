@@ -26,3 +26,23 @@ class Address(CRMModel):
     """The name of the respective city"""
     country = ForeignKeyField(Country, db_column='country', null=True)
     """The country of the address"""
+
+    def __str__(self):
+        """Converts the Address to a string"""
+        result = ''
+        if self.street:
+            if self.house_number:
+                result += ''.join([' '.join([self.street,
+                                             self.house_number]),
+                                   '\n'])
+            else:
+                result += ''.join([self.street, '\n'])
+        if self.zip:
+            result += ''.join([' '.join([self.zip,
+                                         self.city]),
+                               '\n'])
+        if self.po_box:
+            result += ' '.join(['Postfach', self.po_box])
+        if self.country:
+            result += ''.join([str(self.country), '\n'])
+        return result
