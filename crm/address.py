@@ -44,6 +44,7 @@ class Address(CRMModel):
                                          self.city]),
                                '\n'])
         if self.country:
-            if self.country not in ['Deutschland', 'Germany', 'DE']:
-                result += ''.join([str(self.country), '\n'])
+            country_name = str(self.country)
+            if country_name not in ['Deutschland', 'Germany', 'DE']:
+                result += ''.join([country_name, '\n'])
         return result
