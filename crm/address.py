@@ -30,7 +30,9 @@ class Address(CRMModel):
     def __str__(self):
         """Converts the Address to a string"""
         result = ''
-        if self.street:
+        if self.po_box:
+            result += ' '.join(['Postfach', self.po_box, '\n'])
+        elif self.street:
             if self.house_number:
                 result += ''.join([' '.join([self.street,
                                              self.house_number]),
@@ -41,8 +43,6 @@ class Address(CRMModel):
             result += ''.join([' '.join([self.zip,
                                          self.city]),
                                '\n'])
-        if self.po_box:
-            result += ' '.join(['Postfach', self.po_box, '\n'])
         if self.country:
             result += ''.join([str(self.country), '\n'])
         return result
