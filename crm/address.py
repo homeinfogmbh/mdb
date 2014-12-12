@@ -42,7 +42,7 @@ class Address(CRMModel):
                                          self.city]),
                                '\n'])
         if self.po_box:
-            result += ' '.join(['Postfach', self.po_box])
+            result += ' '.join(['Postfach', self.po_box, '\n'])
         if self.country:
             result += ''.join([str(self.country), '\n'])
         return result
