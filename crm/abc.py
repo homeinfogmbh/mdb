@@ -18,5 +18,4 @@ class CRMModel(Model):
                                  host=db.get('host'),
                                  user=db.get('user'),
                                  passwd=db.get('passwd'))
-        database.get_conn().ping(True)
         schema = db.get('db')
