@@ -24,5 +24,10 @@ except OperationalError:
     print('WARNING: No database access - Won\'t create any tables')
 else:
     for table in __tables__:
-        print('Creating table', table)
-        table.create_table(fail_silently=True)
+        print('Creating table', table, end='\t')
+        try:
+            table.create_table(fail_silently=True)
+        except OperationalError:
+            print('[failed]')
+        else:
+            print('[ok]')
