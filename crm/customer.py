@@ -15,7 +15,7 @@ class Customer(CRMModel):
     """
     CRM's customer(s)
     """
-    company = ForeignKeyField(Company)
+    company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
     # TODO: Add other stuff like merchants etc.
 
