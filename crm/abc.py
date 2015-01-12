@@ -17,5 +17,6 @@ class CRMModel(Model):
         database = MySQLDatabase(db.get('db'),
                                  host=db.get('host'),
                                  user=db.get('user'),
-                                 passwd=db.get('passwd'))
+                                 passwd=db.get('passwd'),
+                                 threadlocals=True)
         schema = db.get('db')
