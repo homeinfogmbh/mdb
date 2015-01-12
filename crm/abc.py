@@ -19,15 +19,3 @@ class CRMModel(HIModel):
                                  passwd=db.get('passwd'),
                                  threadlocals=True)
         schema = db.get('db')
-
-    def __enter__(self):
-        """Opens a connection explicitly"""
-        self._meta.database.connect()
-        return self
-
-    def __exit__(self, tpe, value, tb):
-        """Closes a connection if existent"""
-        try:
-            self._meta.database.close()
-        except:
-            pass
