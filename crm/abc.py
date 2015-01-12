@@ -18,4 +18,4 @@ class CRMModel(HIModel):
                                  user=db.get('user'),
                                  passwd=db.get('passwd'),
                                  threadlocals=True)
-        schema = db.get('db')
+        schema = database.database
