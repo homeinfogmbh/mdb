@@ -31,18 +31,14 @@ class Address(CRMModel):
         """Converts the Address to a string"""
         result = ''
         if self.po_box:
-            result += ' '.join(['Postfach', self.po_box, '\n'])
+            result += ''.join(['Postfach', ' ', self.po_box, '\n'])
         elif self.street:
             if self.house_number:
-                result += ''.join([' '.join([self.street,
-                                             self.house_number]),
-                                   '\n'])
+                result += ''.join([self.street, ' ', self.house_number, '\n'])
             else:
                 result += ''.join([self.street, '\n'])
         if self.zip:
-            result += ''.join([' '.join([self.zip,
-                                         self.city]),
-                               '\n'])
+            result += ''.join([self.zip, ' ', self.city, '\n'])
         if self.country:
             country_name = str(self.country)
             if country_name not in ['Deutschland', 'Germany', 'DE']:
