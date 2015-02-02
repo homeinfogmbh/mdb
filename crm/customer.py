@@ -27,6 +27,13 @@ class CustomerWrapper():
         """Returns the customer's ID"""
         return str(self.id)
 
+    def __eq__(self, other):
+        """Checks for equalty"""
+        try:
+            return self.id == other.id
+        except AttributeError:
+            return self.id == other
+
 
 class Customer(CRMModel):
     """CRM's customer(s)"""
