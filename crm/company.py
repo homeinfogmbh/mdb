@@ -1,6 +1,5 @@
-"""
-Company related models for HOMEINFO's CRM
-"""
+"""Company related models for HOMEINFO's CRM"""
+
 from .abc import CRMModel
 from .address import Address
 from peewee import CharField, ForeignKeyField
@@ -11,9 +10,8 @@ __all__ = ['Company', 'Department', 'Employee']
 
 
 class Company(CRMModel):
-    """
-    A company
-    """
+    """A company"""
+
     name = CharField(64)
     """A representative name"""
     address = ForeignKeyField(Address, db_column='address', null=True)
@@ -29,9 +27,8 @@ class Company(CRMModel):
 
 
 class Department(CRMModel):
-    """
-    Departments of companies
-    """
+    """Departments of companies"""
+
     company = ForeignKeyField(Company, db_column='company',
                               related_name='departments')
     """The company, this department belongs to"""
@@ -42,9 +39,8 @@ class Department(CRMModel):
 
 
 class Employee(CRMModel):
-    """
-    Employees
-    """
+    """Employees"""
+
     department = ForeignKeyField(Department, db_column='department',
                                  related_name='staff')
     """The department this employee is working in"""

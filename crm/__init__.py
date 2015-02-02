@@ -1,6 +1,5 @@
-"""
-Tables for HOMEINFO's CRM
-"""
+"""Tables for HOMEINFO's CRM"""
+
 from .address import Address
 from .company import Company, Department, Employee
 from .geo import Country, State

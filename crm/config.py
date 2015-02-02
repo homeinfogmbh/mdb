@@ -1,6 +1,5 @@
-"""
-Basic CRM system configuration
-"""
+"""Basic CRM system configuration"""
+
 from configparser import ConfigParser
 
 __date__ = '12.12.2014'

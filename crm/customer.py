@@ -1,6 +1,5 @@
-"""
-Customer related models for HOMEINFO's CRM
-"""
+"""Customer related models for HOMEINFO's CRM"""
+
 from .abc import CRMModel
 from .company import Company
 from peewee import ForeignKeyField
@@ -40,7 +39,6 @@ class Customer(CRMModel):
 
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
-    # TODO: Add other stuff like merchants etc.
 
     @property
     def cid(self):
@@ -65,11 +63,3 @@ class Customer(CRMModel):
     def wrap(self):
         """Returns a customer wrapper"""
         return CustomerWrapper(self)
-
-    def __str__(self):
-        """Returns a string representation of the customer"""
-        return self.name
-
-    def __repr__(self):
-        """Returns a string representation of the customer"""
-        return str(self.cid)

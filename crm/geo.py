@@ -1,6 +1,5 @@
-"""
-Geography related models for HOMEINFO's CRM
-"""
+"""Geography related models for HOMEINFO's CRM"""
+
 from .abc import CRMModel
 from peewee import CharField, ForeignKeyField
 
@@ -10,9 +9,8 @@ __all__ = ['Country', 'State']
 
 
 class Country(CRMModel):
-    """
-    Country data
-    """
+    """Country data"""
+
     _iso = CharField(2, db_column='iso')
     """An, *exactly* two characters long ISO 3166-2 country code
     example: 'DE'"""
@@ -20,6 +18,10 @@ class Country(CRMModel):
     """The complete country's name"""
     original_name = CharField(64, null=True)
     """The countrie's name in its original language"""
+
+    def __str__(self):
+        """Converts the country to a string"""
+        return self.name
 
     @property
     def iso(self):
@@ -34,15 +36,10 @@ class Country(CRMModel):
         else:
             raise ValueError('ISO code must be exactly two characters long')
 
-    def __str__(self):
-        """Converts the country to a string"""
-        return self.name
-
 
 class State(CRMModel):
-    """
-    Country data
-    """
+    """Country data"""
+
     country = ForeignKeyField(Country, db_column='country',
                               related_name='states')
     """The country this state belongs to"""

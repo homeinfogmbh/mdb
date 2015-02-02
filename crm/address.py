@@ -1,19 +1,19 @@
-"""
-Address related models for HOMEINFO's CRM
-"""
+"""Address related models for HOMEINFO's CRM"""
+
 from .abc import CRMModel
 from .geo import Country
 from peewee import CharField, ForeignKeyField
+from homeinfo.db import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['Address']
 
 
+@create
 class Address(CRMModel):
-    """
-    Address data
-    """
+    """Address data"""
+
     street = CharField(64, null=True)
     """The street's name"""
     house_number = CharField(8, null=True)
