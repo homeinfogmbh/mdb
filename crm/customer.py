@@ -19,6 +19,14 @@ class CustomerWrapper():
         self.id = int(customer.id)
         self.name = str(customer.name)
 
+    def __str__(self):
+        """Returns the customer's full name"""
+        return self.name
+
+    def __repr__(self):
+        """Returns the customer's ID"""
+        return str(self.id)
+
 
 class Customer(CRMModel):
     """CRM's customer(s)"""
