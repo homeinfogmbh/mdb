@@ -11,10 +11,18 @@ __date__ = '18.09.2014'
 __all__ = ['Customer']
 
 
+class CustomerWrapper():
+    """Class that wraps a customer"""
+
+    def __init__(self, customer):
+        """Sets customer ID and name"""
+        self.id = int(customer.id)
+        self.name = str(customer.name)
+
+
 class Customer(CRMModel):
-    """
-    CRM's customer(s)
-    """
+    """CRM's customer(s)"""
+
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
     # TODO: Add other stuff like merchants etc.
@@ -38,6 +46,10 @@ class Customer(CRMModel):
     def name(self):
         """Returns the customer's name"""
         return str(self.company.name) if self.company else ''
+
+    def wrap(self):
+        """Returns a customer wrapper"""
+        return CustomerWrapper(self)
 
     def __str__(self):
         """Returns a string representation of the customer"""
