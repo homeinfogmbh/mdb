@@ -2,12 +2,14 @@
 
 from .abc import CRMModel
 from peewee import CharField, ForeignKeyField
+from homeinfo.db import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['Country', 'State']
 
 
+@create
 class Country(CRMModel):
     """Country data"""
 
@@ -37,6 +39,7 @@ class Country(CRMModel):
             raise ValueError('ISO code must be exactly two characters long')
 
 
+@create
 class State(CRMModel):
     """Country data"""
 

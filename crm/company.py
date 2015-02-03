@@ -3,12 +3,14 @@
 from .abc import CRMModel
 from .address import Address
 from peewee import CharField, ForeignKeyField
+from homeinfo.db import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['Company', 'Department', 'Employee']
 
 
+@create
 class Company(CRMModel):
     """A company"""
 
@@ -26,6 +28,7 @@ class Company(CRMModel):
             yield from department.staff
 
 
+@create
 class Department(CRMModel):
     """Departments of companies"""
 
@@ -38,6 +41,7 @@ class Department(CRMModel):
     """A type like 'IT', 'customer service', etc."""
 
 
+@create
 class Employee(CRMModel):
     """Employees"""
 

@@ -4,12 +4,14 @@ from .abc import CRMModel
 from .company import Company
 from peewee import ForeignKeyField
 from hashlib import sha256
+from homeinfo.db import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['Customer']
 
 
+@create
 class CustomerWrapper():
     """Class that wraps a customer"""
 
@@ -34,6 +36,7 @@ class CustomerWrapper():
             return self.id == other
 
 
+@create
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
