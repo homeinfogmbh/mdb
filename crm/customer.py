@@ -11,7 +11,6 @@ __date__ = '18.09.2014'
 __all__ = ['Customer']
 
 
-@create
 class CustomerWrapper():
     """Class that wraps a customer"""
 
