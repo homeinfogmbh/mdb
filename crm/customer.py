@@ -42,6 +42,14 @@ class Customer(CRMModel):
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
 
+    def __str__(self):
+        """Returns the customer's full name"""
+        return self.name
+
+    def __repr__(self):
+        """Returns the customer's ID"""
+        return str(self.id)
+
     @property
     def cid(self):
         """Returns the Customer ID"""
