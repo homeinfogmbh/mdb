@@ -1,15 +1,16 @@
 """Abstract base classes for HOMEINFO's ORM database"""
 
 from .config import db
-from homeinfo.db import HIModel
-from peewee import MySQLDatabase
+from peewee import Model, MySQLDatabase
+from homeinfo.db import improved
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['CRMModel']
 
 
-class CRMModel(HIModel):
+@improved
+class CRMModel(Model):
     """Generic HOMEINFO-DB Model"""
 
     class Meta:
