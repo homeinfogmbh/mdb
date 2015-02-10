@@ -4,7 +4,7 @@ from .abc import CRMModel
 from .company import Company
 from peewee import ForeignKeyField
 from hashlib import sha256
-from homeinfo.db import create
+from homeinfo.db import create, connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -28,7 +28,7 @@ class CustomerWrapper():
         return str(self.id)
 
     def __eq__(self, other):
-        """Checks for equalty"""
+        """Checks for equality"""
         try:
             return self.id == other.id
         except AttributeError:
@@ -68,7 +68,8 @@ class Customer(CRMModel):
     @property
     def name(self):
         """Returns the customer's name"""
-        return str(self.company.name) if self.company else ''
+        with connection(self):
+            return str(self.company.name) if self.company else ''
 
     def wrap(self):
         """Returns a customer wrapper"""
