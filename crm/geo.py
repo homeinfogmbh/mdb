@@ -2,7 +2,7 @@
 
 from .abc import CRMModel
 from peewee import CharField, ForeignKeyField
-from homeinfo.db import create
+from homeinfolib import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'

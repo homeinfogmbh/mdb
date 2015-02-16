@@ -4,7 +4,7 @@ from .abc import CRMModel
 from .company import Company
 from peewee import ForeignKeyField
 from hashlib import sha256
-from homeinfo.db import create, connection
+from homeinfolib import create, connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
