@@ -1,7 +1,7 @@
 """Address related models for HOMEINFO's CRM"""
 
 from .abc import CRMModel
-from .geo import Country
+from .geo import State
 from peewee import CharField, ForeignKeyField
 from homeinfolib import create
 
@@ -24,7 +24,7 @@ class Address(CRMModel):
     """The po box number"""
     city = CharField(64)
     """The name of the respective city"""
-    country = ForeignKeyField(Country, db_column='country', null=True)
+    state = ForeignKeyField(State, db_column='state', null=True)
     """The country of the address"""
 
     def __str__(self):
@@ -39,8 +39,8 @@ class Address(CRMModel):
                 result += ''.join([self.street, '\n'])
         if self.zip:
             result += ''.join([self.zip, ' ', self.city, '\n'])
-        if self.country:
-            country_name = str(self.country)
+        if self.state:
+            country_name = str(self.state.country)
             if country_name not in ['Deutschland', 'Germany', 'DE']:
                 result += ''.join([country_name, '\n'])
         return result
