@@ -11,30 +11,6 @@ __date__ = '18.09.2014'
 __all__ = ['Customer']
 
 
-class CustomerWrapper():
-    """Class that wraps a customer"""
-
-    def __init__(self, customer):
-        """Sets customer ID and name"""
-        self.id = int(customer.id)
-        self.name = str(customer.name)
-
-    def __str__(self):
-        """Returns the customer's full name"""
-        return self.name
-
-    def __repr__(self):
-        """Returns the customer's ID"""
-        return str(self.id)
-
-    def __eq__(self, other):
-        """Checks for equality"""
-        try:
-            return self.id == other.id
-        except AttributeError:
-            return self.id == other
-
-
 @create
 class Customer(CRMModel):
     """CRM's customer(s)"""
@@ -70,7 +46,3 @@ class Customer(CRMModel):
         """Returns the customer's name"""
         with connection(self):
             return str(self.company.name) if self.company else ''
-
-    def wrap(self):
-        """Returns a customer wrapper"""
-        return CustomerWrapper(self)
