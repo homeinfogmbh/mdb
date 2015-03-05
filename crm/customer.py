@@ -45,5 +45,4 @@ class Customer(CRMModel):
     def name(self):
         """Returns the customer's name"""
         with connection(self):
-            name = str(self.company.name) if self.company else ''
-        return name
+            return str(self.company.name) if self.company else ''
