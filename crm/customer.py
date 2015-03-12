@@ -57,5 +57,5 @@ class Customer(CRMModel):
     @property
     def name(self):
         """Returns the customer's name"""
-        with self:
-            return str(self._company.name) if self._company else ''
+        company = self.company
+        return str(company.name) if company else ''
