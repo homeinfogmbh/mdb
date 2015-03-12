@@ -3,6 +3,7 @@
 from .abc import CRMModel
 from peewee import CharField, ForeignKeyField
 from homeinfolib import create
+from homeinfolib.db import connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -68,4 +69,6 @@ class State(CRMModel):
     @property
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code"""
-        return '-'.join([self.country.iso, self.iso])
+        with connection(Country):
+            country = self.country
+        return '-'.join([country.iso, self.iso])

@@ -4,6 +4,7 @@ from .abc import CRMModel
 from .geo import State
 from peewee import CharField, ForeignKeyField
 from homeinfolib import create
+from homeinfolib.db import connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -39,8 +40,10 @@ class Address(CRMModel):
                 result += ''.join([self.street, '\n'])
         if self.zip:
             result += ''.join([self.zip, ' ', self.city, '\n'])
-        if self.state:
-            country_name = str(self.state.country)
-            if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += ''.join([country_name, '\n'])
+        with connection(State):
+            state = self.state
+            if state:
+                country_name = str(self.state.country)
+                if country_name not in ['Deutschland', 'Germany', 'DE']:
+                    result += ''.join([country_name, '\n'])
         return result

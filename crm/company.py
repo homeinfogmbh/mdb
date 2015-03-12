@@ -25,7 +25,8 @@ class Company(CRMModel):
     def employees(self):
         """Returns the company's employees"""
         for department in self.departments:  # related_name from Department
-            yield from department.staff
+            with department:
+                yield from department.staff
 
 
 @create
