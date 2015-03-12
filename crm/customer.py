@@ -15,8 +15,7 @@ __all__ = ['Customer']
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
-    company = ForeignKeyField(Company, db_column='company',
-                              related_name='customers')
+    company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
 
     def __str__(self):
