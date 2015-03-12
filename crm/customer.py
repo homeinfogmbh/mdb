@@ -15,8 +15,8 @@ __all__ = ['Customer']
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
-    _company = ForeignKeyField(Company, db_column='company',
-                               related_name='customers')
+    company = ForeignKeyField(Company, db_column='company',
+                              related_name='customers')
     """A related company"""
 
     def __str__(self):
@@ -38,18 +38,6 @@ class Customer(CRMModel):
         self.id = cid
 
     @property
-    def company(self):
-        """Returns the company"""
-        with connection(Company):
-            return self._company
-
-    @company.setter
-    def company(self, company):
-        """Sets the company"""
-        with connection(Company):
-            self._company = company
-
-    @property
     def sha256name(self):
         """Returns the SHA-256 encoded CID"""
         return str(sha256(str(self.cid).encode()).hexdigest())
@@ -57,5 +45,6 @@ class Customer(CRMModel):
     @property
     def name(self):
         """Returns the customer's name"""
-        company = self.company
+        with connection(Company):
+            company = self.company
         return str(company.name) if company else ''
