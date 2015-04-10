@@ -6,7 +6,7 @@ setup(
     name='homeinfo',
     version='1.0',
     author='Richard Neumann',
-    author_email='mail@richard-neumann.de',
+    author_email='r.neumann@homeinfo.de',
     requires=['peewee',
               'homeinfo'],
     package_dir={'homeinfo': ''},
