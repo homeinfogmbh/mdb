@@ -19,7 +19,7 @@ class Address(CRMModel):
     """The street's name"""
     house_number = CharField(8, null=True)
     """The house number"""
-    zip = CharField(32, null=True)
+    zip_code = CharField(32, null=True)
     """The zip code"""
     po_box = CharField(32, null=True)
     """The po box number"""
@@ -38,8 +38,8 @@ class Address(CRMModel):
                 result += ''.join([self.street, ' ', self.house_number, '\n'])
             else:
                 result += ''.join([self.street, '\n'])
-        if self.zip:
-            result += ''.join([self.zip, ' ', self.city, '\n'])
+        if self.zip_code:
+            result += ''.join([self.zip_code, ' ', self.city, '\n'])
         with connection(State):
             state = self.state
             if state:
