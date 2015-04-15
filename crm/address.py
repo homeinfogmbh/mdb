@@ -1,10 +1,9 @@
 """Address related models for HOMEINFO's CRM"""
 
+from peewee import CharField, ForeignKeyField, DoesNotExist
+from homeinfolib.db import create, connection
 from .abc import CRMModel
 from .geo import State
-from peewee import CharField, ForeignKeyField
-from homeinfolib import create
-from homeinfolib.db import connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -47,3 +46,27 @@ class Address(CRMModel):
                 if country_name not in ['Deutschland', 'Germany', 'DE']:
                     result += ''.join([country_name, '\n'])
         return result
+
+    @classmethod
+    def add(cls, city, street=None, house_number=None,
+            zip_code=None, po_box=None, state=None):
+        """Adds an address record to the database"""
+        try:
+            addr = Address.iget(  # @UndefinedVariable
+                (Address.city == city) &
+                (Address.street == street) &
+                (Address.house_number == house_number) &
+                (Address.zip_code == zip_code) &
+                (Address.po_box == po_box) &
+                (Address.state == state))
+        except DoesNotExist:
+            addr = Address()
+            addr.city = city
+            addr.street = street
+            addr.house_number = house_number
+            addr.zip_code = zip_code
+            addr.po_box = po_box
+            addr.state = state
+            addr.isave()
+        finally:
+            return addr
