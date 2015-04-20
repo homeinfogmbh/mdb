@@ -9,7 +9,6 @@ setup(
     author_email='r.neumann@homeinfo.de',
     requires=['peewee',
               'homeinfo'],
-    package_dir={'homeinfo': ''},
     packages=['homeinfo.crm'],
     data_files=[('/usr/local/etc', ['files/etc/crm.conf'])],
     license=open('LICENSE.txt').read(),
