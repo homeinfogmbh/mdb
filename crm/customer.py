@@ -1,10 +1,9 @@
 """Customer related models for HOMEINFO's CRM"""
 
+from hashlib import sha256
+from peewee import ForeignKeyField, create
 from .abc import CRMModel
 from .company import Company
-from peewee import ForeignKeyField
-from hashlib import sha256
-from homeinfolib.db import create, connection
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -27,16 +26,6 @@ class Customer(CRMModel):
         return str(self.id)
 
     @property
-    def cid(self):
-        """Returns the Customer ID"""
-        return self.id
-
-    @cid.setter
-    def cid(self, cid):
-        """Sets the Customer ID"""
-        self.id = cid
-
-    @property
     def sha256name(self):
         """Returns the SHA-256 encoded CID"""
         return str(sha256(str(self.cid).encode()).hexdigest())
@@ -44,6 +33,4 @@ class Customer(CRMModel):
     @property
     def name(self):
         """Returns the customer's name"""
-        with connection(Company):
-            company = self.company
-        return str(company.name) if company else ''
+        return str(self.company.name) if self.company else ''

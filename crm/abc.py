@@ -1,15 +1,13 @@
 """Abstract base classes for HOMEINFO's ORM database"""
 
-from .config import db
 from peewee import Model, MySQLDatabase
-from homeinfolib import improved
+from .config import db
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
 __all__ = ['CRMModel']
 
 
-@improved
 class CRMModel(Model):
     """Generic HOMEINFO-DB Model"""
 

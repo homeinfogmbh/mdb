@@ -1,9 +1,8 @@
 """Company related models for HOMEINFO's CRM"""
 
+from peewee import CharField, ForeignKeyField, create
 from .abc import CRMModel
 from .address import Address
-from peewee import CharField, ForeignKeyField
-from homeinfolib import create
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
 __date__ = '18.09.2014'
@@ -22,20 +21,16 @@ class Company(CRMModel):
     """Type like 'bank' or 'realtor', etc."""
 
     @property
-    def employees(self):
-        """Returns the company's employees"""
-        for department in self.departments:  # related_name from Department
-            with department:
-                yield from department.staff
+    def departments(self):
+        """Yields the companie's departments"""
+        for company_department in CompanyDepartments.select().where(True):
+            yield company_department.department
 
 
 @create
 class Department(CRMModel):
     """Departments of companies"""
 
-    company = ForeignKeyField(Company, db_column='company',
-                              related_name='departments')
-    """The company, this department belongs to"""
     name = CharField(64)
     """A representative name"""
     type = CharField(64, null=True)
@@ -43,9 +38,27 @@ class Department(CRMModel):
 
 
 @create
+class CompanyDepartments(CRMModel):
+    """Department <-> Company mappings"""
+
+    class Meta:
+        db_table = 'company_departments'
+
+    company = ForeignKeyField(Company, db_column='company',
+                              related_name='_departments')
+    """The respective company"""
+    department = ForeignKeyField(Company, db_column='department',
+                                 related_name='_companies')
+    """The respective department"""
+
+
+@create
 class Employee(CRMModel):
     """Employees"""
 
+    company = ForeignKeyField(Company, db_column='company',
+                              related_name='employees')
+    """The company, the employee is working for"""
     department = ForeignKeyField(Department, db_column='department',
                                  related_name='staff')
     """The department this employee is working in"""

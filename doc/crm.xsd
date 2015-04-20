@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HOMEINFO Customer Relationship Management -->
+<xs:schema  xmlns="http://xml.homeinfo.de/schema/crm"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
+            targetNamespace="http://xml.homeinfo.de/schema/crm">
+
+    <!-- Root element -->
+    <xs:element name="homeinfocrm" type="HomeinfoCrm"/>
+
+
+    <!-- Terminal library root type -->
+    <xs:complexType name="HomeinfoCrm">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                A CRM web API solution by HOMEINFO Digitale Informationssysteme GmbH
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="address" type="Address" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="company" type="Company" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="country" type="Country" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="customer" type="Customer" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="department" type="Department" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="employee" type="Employee" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="state" type="State" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:choice>
+    </xs:complexType>
+
+
+    <!-- A CRM Customer -->
+    <xs:complexType name="Customer">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                A customer of HOMEINFO
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="company" type="Company">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The respective company
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The customer's unique identifier
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
+    <!-- Address data -->
+    <xs:complexType name="Address">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                An address
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="street" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The street's name
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="house_number" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        A house number
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="zip_code" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The ZIP code
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="po_box" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        An alternative PO box
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="city" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The city (mandatory)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="state" type="State" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The respective state
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The address' unique identifier
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
+    <!-- Company data -->
+    <xs:complexType name="Company">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                An address
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="name" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The company's name (mandatory)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="address" type="Address" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        The companie's main address
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="annotation" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        An optional annotation
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The companies' unique identifier
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
+    <!-- Country data -->
+    <xs:complexType name="Country">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                A country
+            </xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="id" type="xs:integer" use="required">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                            The countrie's unique identifier
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="iso" type="CountryISO" use="required">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                            The countrie's ISO code
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="original_name" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">
+                            The language of the text
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+</xs:schema>

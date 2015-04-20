@@ -1,7 +1,6 @@
 """Address related models for HOMEINFO's CRM"""
 
-from peewee import CharField, ForeignKeyField, DoesNotExist
-from homeinfolib.db import create, connection
+from peewee import CharField, ForeignKeyField, DoesNotExist, create
 from .abc import CRMModel
 from .geo import State
 
@@ -39,12 +38,11 @@ class Address(CRMModel):
                 result += ''.join([self.street, '\n'])
         if self.zip_code:
             result += ''.join([self.zip_code, ' ', self.city, '\n'])
-        with connection(State):
-            state = self.state
-            if state:
-                country_name = str(self.state.country)
-                if country_name not in ['Deutschland', 'Germany', 'DE']:
-                    result += ''.join([country_name, '\n'])
+        state = self.state
+        if state:
+            country_name = str(self.state.country)
+            if country_name not in ['Deutschland', 'Germany', 'DE']:
+                result += ''.join([country_name, '\n'])
         return result
 
     @classmethod
