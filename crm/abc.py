@@ -1,6 +1,6 @@
 """Abstract base classes for HOMEINFO's CRM database"""
 
-from peewee import Model, MySQLDatabase
+from peewee import Model, MySQLDatabase, PrimaryKeyField
 from .config import db
 
 __author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
@@ -18,3 +18,6 @@ class CRMModel(Model):
                                  passwd=db.get('passwd'),
                                  threadlocals=True)
         schema = database.database
+
+    id = PrimaryKeyField()
+    """The table's primary key"""
