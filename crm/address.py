@@ -46,25 +46,68 @@ class Address(CRMModel):
         return result
 
     @classmethod
-    def add(cls, city, street=None, house_number=None,
-            zip_code=None, po_box=None, state=None):
-        """Adds an address record to the database"""
-        try:
-            addr = Address.iget(  # @UndefinedVariable
-                (Address.city == city) &
-                (Address.street == street) &
-                (Address.house_number == house_number) &
-                (Address.zip_code == zip_code) &
-                (Address.po_box == po_box) &
-                (Address.state == state))
-        except DoesNotExist:
-            addr = Address()
-            addr.city = city
-            addr.street = street
-            addr.house_number = house_number
-            addr.zip_code = zip_code
-            addr.po_box = po_box
-            addr.state = state
-            addr.isave()
-        finally:
-            return addr
+    def add(cls, city, po_box=None, addr=None, state=None):
+        """Adds an address record to the database
+        Usage:
+            * Add address with either po_box or addr parameter
+            * addr must be a tuple: (<street>, <house_number>, <zip_code>)
+        """
+        if po_box is None and state is None:
+            raise ValueError('Must specify either po_box or addr')
+        elif po_box is not None and addr is not None:
+            raise ValueError('Must specify either po_box or addr')
+        elif addr is not None:
+            street, house_number, zip_code = addr
+            if state is None:
+                try:
+                    address = Address.get((Address.city == city) &
+                                          (Address.street == street) &
+                                          (Address.house_number
+                                           == house_number) &
+                                          (Address.zip_code == zip_code))
+                except DoesNotExist:
+                    address = Address()
+                    address.city = city
+                    address.street = street
+                    address.house_number = house_number
+                    address.zip_code = zip_code
+                    address.save()
+                return address
+            else:
+                try:
+                    address = Address.get((Address.city == city) &
+                                          (Address.street == street) &
+                                          (Address.house_number
+                                           == house_number) &
+                                          (Address.zip_code == zip_code) &
+                                          (Address.state == state))
+                except DoesNotExist:
+                    address = Address()
+                    address.city = city
+                    address.street = street
+                    address.house_number = house_number
+                    address.zip_code = zip_code
+                    address.state = state
+                    address.save()
+                return address
+        elif po_box is not None:
+            if state is None:
+                try:
+                    address = Address.get(Address.po_box == po_box)
+                except DoesNotExist:
+                    address = Address()
+                    address.po_box = po_box
+                    address.save()
+                return address
+            else:
+                try:
+                    address = Address.get((Address.po_box == po_box) &
+                                          (Address.state == state))
+                except DoesNotExist:
+                    address = Address()
+                    address.po_box = po_box
+                    address.state = state
+                    address.save()
+                return address
+        else:
+            raise ValueError('Must specify either po_box or addr')
