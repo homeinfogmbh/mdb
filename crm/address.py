@@ -52,7 +52,7 @@ class Address(CRMModel):
             * Add address with either po_box or addr parameter
             * addr must be a tuple: (<street>, <house_number>, <zip_code>)
         """
-        if po_box is None and state is None:
+        if po_box is None and addr is None:
             raise ValueError('Must specify either po_box or addr')
         elif po_box is not None and addr is not None:
             raise ValueError('Must specify either po_box or addr')
