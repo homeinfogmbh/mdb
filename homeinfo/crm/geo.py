@@ -59,7 +59,7 @@ class State(CRMModel):
     @iso.setter
     def iso(self, iso):
         """Sets the ISO code"""
-        if len(iso) is 2:
+        if len(iso) == 2:
             self._iso = iso
         else:
             raise ValueError('ISO code must be exactly two characters long')

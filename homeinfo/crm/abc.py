@@ -1,4 +1,4 @@
-"""Abstract base classes for HOMEINFO's ORM database"""
+"""Abstract base classes for HOMEINFO's CRM database"""
 
 from peewee import Model, MySQLDatabase
 from .config import db
@@ -9,7 +9,7 @@ __all__ = ['CRMModel']
 
 
 class CRMModel(Model):
-    """Generic HOMEINFO-DB Model"""
+    """Generic HOMEINFO CRM Model"""
 
     class Meta:
         database = MySQLDatabase(db.get('db'),

@@ -28,7 +28,7 @@ class Customer(CRMModel):
     @property
     def sha256name(self):
         """Returns the SHA-256 encoded CID"""
-        return str(sha256(str(self.cid).encode()).hexdigest())
+        return str(sha256(str(self.id).encode()).hexdigest())
 
     @property
     def name(self):
