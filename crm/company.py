@@ -47,7 +47,7 @@ class CompanyDepartments(CRMModel):
     company = ForeignKeyField(Company, db_column='company',
                               related_name='_departments')
     """The respective company"""
-    department = ForeignKeyField(Company, db_column='department',
+    department = ForeignKeyField(Department, db_column='department',
                                  related_name='_companies')
     """The respective department"""
 
