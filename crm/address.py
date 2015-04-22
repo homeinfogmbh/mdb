@@ -45,6 +45,14 @@ class Address(CRMModel):
                 result += ''.join([country_name, '\n'])
         return result
 
+    def __repr__(self):
+        """Converts the Address to a one-line string"""
+        if self.po_box:
+            return ' '.join([self.po_box, self.city])
+        else:
+            return ', '.join([' '.join([self.street, self.house_number]),
+                              ' '.join([self.zip_code, self.city])])
+
     @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
         """Adds an address record to the database
