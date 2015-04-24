@@ -10,7 +10,7 @@ setup(
     requires=['peewee',
               'homeinfo'],
     package_dir={'homeinfo': ''},
-    packages=['homeinfo.crm'],
+    py_modules=['crm.py'],
     data_files=[('/usr/local/etc', ['files/etc/crm.conf'])],
     license=open('LICENSE.txt').read(),
     description='HOMEINFO ORM database root',
