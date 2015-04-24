@@ -1,4 +1,4 @@
-"""Abstract base classes for HOMEINFO's CRM database"""
+"""HOMEINFO's CRM database configuration and models"""
 
 from hashlib import sha256
 from configparser import ConfigParser
