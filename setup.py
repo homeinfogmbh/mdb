@@ -1,12 +1,15 @@
 #! /usr/bin/env python3
 
 from distutils.core import setup
+from homeinfo.lib.misc import GitInfo
+
+version, author, email, *_ = GitInfo()
 
 setup(
-    name='homeinfo.crm',
-    version='3.0.0-1',
-    author='Richard Neumann',
-    author_email='r.neumann@homeinfo.de',
+    name='HOMEINFO Customer Relationship Management',
+    version=version,
+    author=author,
+    author_email=email,
     requires=['peewee',
               'homeinfo.lib'],
     package_dir={'homeinfo': ''},
