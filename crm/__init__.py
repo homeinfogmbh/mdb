@@ -5,8 +5,6 @@ from configparser import ConfigParser
 from peewee import Model, MySQLDatabase, PrimaryKeyField, CharField,\
     ForeignKeyField, DoesNotExist, create
 
-__author__ = 'Richard Neumann <r.neumann@homeinfo.de>'
-__date__ = '18.09.2014'
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
            'CompanyDepartments', 'Employee', 'Customer']
 
