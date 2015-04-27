@@ -6,7 +6,7 @@ from homeinfo.lib.misc import GitInfo
 version, author, author_email, *_ = GitInfo()
 
 setup(
-    name='HOMEINFO Customer Relationship Management',
+    name='homeinfo-crm',
     version=version,
     author=author,
     author_email=author_email,
@@ -15,5 +15,5 @@ setup(
     package_dir={'homeinfo': ''},
     packages=['homeinfo.crm'],
     data_files=[('/usr/local/etc', ['files/etc/crm.conf'])],
-    description="HOMEINFO's CRM database ORM",
+    description='HOMEINFO Customer Relationship Management ORM',
 )
