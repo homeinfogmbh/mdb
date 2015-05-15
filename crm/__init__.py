@@ -3,7 +3,7 @@
 from hashlib import sha256
 from configparser import ConfigParser
 from peewee import Model, MySQLDatabase, PrimaryKeyField, CharField,\
-    ForeignKeyField, DoesNotExist, create
+    ForeignKeyField, DoesNotExist, create, IntegerField
 
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
            'CompanyDepartments', 'Employee', 'Customer']
@@ -280,6 +280,8 @@ class Customer(CRMModel):
 
     company = ForeignKeyField(Company, related_name='customers')
     """A related company"""
+    piwik_tracking_id = IntegerField(null=True)
+    """Legacy tracking ID of the old PIWIK system"""
 
     def __str__(self):
         """Returns the customer's full name"""
