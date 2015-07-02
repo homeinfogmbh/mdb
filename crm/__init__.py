@@ -8,21 +8,16 @@ from peewee import Model, MySQLDatabase, PrimaryKeyField, CharField,\
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
            'CompanyDepartments', 'Employee', 'Customer']
 
-CONFIG_FILE = '/usr/local/etc/crm.conf'
-config = ConfigParser()
-config.read(CONFIG_FILE)
-db = config['db']
-
 
 class CRMModel(Model):
     """Generic HOMEINFO CRM Model"""
 
     class Meta:
-        database = MySQLDatabase(db.get('db'),
-                                 host=db.get('host'),
-                                 user=db.get('user'),
-                                 passwd=db.get('passwd'),
-                                 threadlocals=True)
+        database = MySQLDatabase(
+            'homeinfo_crm',
+            host='localhost',
+            user='homeinfo_crm',
+            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W')
         schema = database.database
 
     id = PrimaryKeyField()
