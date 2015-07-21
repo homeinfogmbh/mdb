@@ -28,13 +28,10 @@ class CRMModel(Model):
 class Country(CRMModel):
     """Country data"""
 
+    # An *exactly* two characters long ISO 3166-2 state code
     _iso = CharField(2, db_column='iso')
-    """An, *exactly* two characters long ISO 3166-2 country code
-    example: 'DE'"""
     name = CharField(64)
-    """The complete country's name"""
     original_name = CharField(64, null=True)
-    """The countrie's name in its original language"""
 
     def __str__(self):
         """Converts the country to a string"""
@@ -58,14 +55,12 @@ class Country(CRMModel):
 class State(CRMModel):
     """Country data"""
 
-    country = ForeignKeyField(Country, db_column='country',
-                              related_name='states')
-    """The country this state belongs to"""
+    country = ForeignKeyField(
+        Country, db_column='country',
+        related_name='states')
+    # An *exactly* two characters long ISO 3166-2 state code
     _iso = CharField(2, db_column='iso')
-    """An *exactly* two characters long ISO 3166-2 state code
-    examples: 'NI' or 'NW'"""
     name = CharField(64)
-    """The complete state's name"""
 
     @property
     def iso(self):
@@ -83,7 +78,7 @@ class State(CRMModel):
     @property
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code"""
-        return '-'.join([self.country.iso, self.iso])
+        return '{0}-{1}'.format(self.country.iso, self.iso)
 
 
 @create
@@ -107,28 +102,29 @@ class Address(CRMModel):
         """Converts the Address to a string"""
         result = ''
         if self.po_box:
-            result += ''.join(['Postfach', ' ', self.po_box, '\n'])
+            result += 'Postfach {0}\n'.format(self.po_box)
         elif self.street:
             if self.house_number:
-                result += ''.join([self.street, ' ', self.house_number, '\n'])
+                result += '{0} {1}\n'.format(self.street, self.house_number)
             else:
-                result += ''.join([self.street, '\n'])
+                result += '{0}\n'.format(self.street)
         if self.zip_code:
-            result += ''.join([self.zip_code, ' ', self.city, '\n'])
+            result += '{0} {1}\n'.format(self.zip_code, self.city)
         state = self.state
         if state:
             country_name = str(self.state.country)
             if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += ''.join([country_name, '\n'])
+                result += '{0}\n'.format(country_name)
         return result
 
     def __repr__(self):
         """Converts the Address to a one-line string"""
         if self.po_box:
-            return ' '.join([self.po_box, self.city])
+            return '{0} {1}'.format(self.po_box, self.city)
         else:
-            return ', '.join([' '.join([self.street, self.house_number]),
-                              ' '.join([self.zip_code, self.city])])
+            return '{0} {1}, {2} {3}'.format(
+                self.street, self.house_number,
+                self.zip_code, self.city)
 
     @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
@@ -145,11 +141,11 @@ class Address(CRMModel):
             street, house_number, zip_code = addr
             if state is None:
                 try:
-                    address = Address.get((Address.city == city) &
-                                          (Address.street == street) &
-                                          (Address.house_number
-                                           == house_number) &
-                                          (Address.zip_code == zip_code))
+                    address = Address.get(
+                        (Address.city == city) &
+                        (Address.street == street) &
+                        (Address.house_number == house_number) &
+                        (Address.zip_code == zip_code))
                 except DoesNotExist:
                     address = Address()
                     address.city = city
@@ -160,12 +156,12 @@ class Address(CRMModel):
                 return address
             else:
                 try:
-                    address = Address.get((Address.city == city) &
-                                          (Address.street == street) &
-                                          (Address.house_number
-                                           == house_number) &
-                                          (Address.zip_code == zip_code) &
-                                          (Address.state == state))
+                    address = Address.get(
+                        (Address.city == city) &
+                        (Address.street == street) &
+                        (Address.house_number == house_number) &
+                        (Address.zip_code == zip_code) &
+                        (Address.state == state))
                 except DoesNotExist:
                     address = Address()
                     address.city = city
@@ -186,8 +182,9 @@ class Address(CRMModel):
                 return address
             else:
                 try:
-                    address = Address.get((Address.po_box == po_box) &
-                                          (Address.state == state))
+                    address = Address.get(
+                        (Address.po_box == po_box) &
+                        (Address.state == state))
                 except DoesNotExist:
                     address = Address()
                     address.po_box = po_box
@@ -203,11 +200,8 @@ class Company(CRMModel):
     """A company"""
 
     name = CharField(64)
-    """A representative name"""
     address = ForeignKeyField(Address, db_column='address', null=True)
-    """The employee's address"""
     annotation = CharField(256, null=True)
-    """Type like 'bank' or 'realtor', etc."""
 
     @property
     def departments(self):
@@ -221,9 +215,7 @@ class Department(CRMModel):
     """Departments of companies"""
 
     name = CharField(64)
-    """A representative name"""
     type = CharField(64, null=True)
-    """A type like 'IT', 'customer service', etc."""
 
 
 @create
@@ -233,40 +225,32 @@ class CompanyDepartments(CRMModel):
     class Meta:
         db_table = 'company_departments'
 
-    company = ForeignKeyField(Company, db_column='company',
-                              related_name='_departments')
-    """The respective company"""
-    department = ForeignKeyField(Department, db_column='department',
-                                 related_name='_companies')
-    """The respective department"""
+    company = ForeignKeyField(
+        Company, db_column='company',
+        related_name='_departments')
+    department = ForeignKeyField(
+        Department, db_column='department',
+        related_name='_companies')
 
 
 @create
 class Employee(CRMModel):
     """Employees"""
 
-    company = ForeignKeyField(Company, db_column='company',
-                              related_name='employees')
-    """The company, the employee is working for"""
-    department = ForeignKeyField(Department, db_column='department',
-                                 related_name='staff')
-    """The department this employee is working in"""
+    company = ForeignKeyField(
+        Company, db_column='company',
+        related_name='employees')
+    department = ForeignKeyField(
+        Department, db_column='department',
+        related_name='staff')
     first_name = CharField(32, null=True)
-    """The employee's first name"""
     surname = CharField(32)
-    """The employee's surname"""
     phone = CharField(32)
-    """The employee's phone number"""
     cellphone = CharField(32, null=True)
-    """The employee's cell phone number"""
     email = CharField(64, null=True)
-    """The employee's email address"""
     phone_alt = CharField(32, null=True)
-    """An alternative phone number"""
     fax = CharField(32, null=True)
-    """The employee's fax number"""
     address = ForeignKeyField(Address, db_column='address', null=True)
-    """The employee's address"""
 
 
 @create
@@ -274,9 +258,7 @@ class Customer(CRMModel):
     """CRM's customer(s)"""
 
     company = ForeignKeyField(Company, related_name='customers')
-    """A related company"""
     piwik_tracking_id = IntegerField(null=True)
-    """Legacy tracking ID of the old PIWIK system"""
 
     def __str__(self):
         """Returns the customer's full name"""
