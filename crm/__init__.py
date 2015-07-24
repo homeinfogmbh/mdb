@@ -252,6 +252,13 @@ class Employee(CRMModel):
     fax = CharField(32, null=True)
     address = ForeignKeyField(Address, db_column='address', null=True)
 
+    def __str__(self):
+        """Returns the employee's name"""
+        if self.first_name is not None:
+            return ' '.join([self.first_name, self.surname])
+        else:
+            return self.surname
+
 
 @create
 class Customer(CRMModel):
