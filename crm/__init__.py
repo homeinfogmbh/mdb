@@ -17,7 +17,8 @@ class CRMModel(Model):
             'homeinfo_crm',
             host='localhost',
             user='homeinfo_crm',
-            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W')
+            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
+            closing=True)
         schema = database.database
 
     id = PrimaryKeyField()
