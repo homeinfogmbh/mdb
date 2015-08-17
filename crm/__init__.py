@@ -93,7 +93,7 @@ class Address(CRMModel):
     city = CharField(64)
     state = ForeignKeyField(State, db_column='state', null=True)
 
-    def __str__(self):
+    def __repr__(self):
         """Converts the Address to a one-line string"""
         if self.po_box:
             return '{0} {1}'.format(self.po_box, self.city)
@@ -101,6 +101,25 @@ class Address(CRMModel):
             return '{0} {1}, {2} {3}'.format(
                 self.street, self.house_number,
                 self.zip_code, self.city)
+
+    def __str__(self):
+        """Converts the Address to a string"""
+        result = ''
+        if self.po_box:
+            result += 'Postfach {0}\n'.format(self.po_box)
+        elif self.street:
+            if self.house_number:
+                result += '{0} {1}\n'.format(self.street, self.house_number)
+            else:
+                result += '{0}\n'.format(self.street)
+        if self.zip_code:
+            result += '{0} {1}\n'.format(self.zip_code, self.city)
+        state = self.state
+        if state:
+            country_name = str(self.state.country)
+            if country_name not in ['Deutschland', 'Germany', 'DE']:
+                result += '{0}\n'.format(country_name)
+        return result
 
     @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
@@ -169,26 +188,6 @@ class Address(CRMModel):
                 return address
         else:
             raise ValueError('Must specify either po_box or addr')
-
-    @property
-    def string(self):
-        """Converts the Address to a string"""
-        result = ''
-        if self.po_box:
-            result += 'Postfach {0}\n'.format(self.po_box)
-        elif self.street:
-            if self.house_number:
-                result += '{0} {1}\n'.format(self.street, self.house_number)
-            else:
-                result += '{0}\n'.format(self.street)
-        if self.zip_code:
-            result += '{0} {1}\n'.format(self.zip_code, self.city)
-        state = self.state
-        if state:
-            country_name = str(self.state.country)
-            if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += '{0}\n'.format(country_name)
-        return result
 
 
 @create
