@@ -2,8 +2,10 @@
 
 from hashlib import sha256
 from configparser import ConfigParser
-from peewee import Model, MySQLDatabase, PrimaryKeyField, CharField,\
-    ForeignKeyField, DoesNotExist, create, IntegerField
+from peewee import Model, PrimaryKeyField, CharField,\
+    ForeignKeyField, DoesNotExist, IntegerField
+
+from homeinfo.peewee import MySQLDatabase, create
 
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
            'CompanyDepartments', 'Employee', 'Customer']
