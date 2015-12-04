@@ -16,7 +16,7 @@ class CRMModel(Model):
 
     class Meta:
         database = MySQLDatabase(
-            'homeinfo_crm',
+            'crm',
             host='localhost',
             user='homeinfo_crm',
             passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
