@@ -18,7 +18,7 @@ class CRMModel(Model):
         database = MySQLDatabase(
             'crm',
             host='localhost',
-            user='homeinfo_crm',
+            user='crm',
             passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
             closing=True)
         schema = database.database
