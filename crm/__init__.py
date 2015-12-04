@@ -8,7 +8,7 @@ from peewee import Model, PrimaryKeyField, CharField,\
 from homeinfo.peewee import MySQLDatabase, create
 
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
-           'CompanyDepartments', 'Employee', 'Customer']
+           'Employee', 'Customer']
 
 
 class CRMModel(Model):
@@ -202,9 +202,11 @@ class Company(CRMModel):
 
     @property
     def departments(self):
-        """Yields the companie's departments"""
-        for company_department in CompanyDepartments.select().where(True):
-            yield company_department.department
+        """Returns the company's departments"""
+        departments = set()
+        for employee in self.employees:
+            departments.add(employee.department)
+        return departments
 
 
 @create
@@ -213,21 +215,6 @@ class Department(CRMModel):
 
     name = CharField(64)
     type = CharField(64, null=True)
-
-
-@create
-class CompanyDepartments(CRMModel):
-    """Department <-> Company mappings"""
-
-    class Meta:
-        db_table = 'company_departments'
-
-    company = ForeignKeyField(
-        Company, db_column='company',
-        related_name='_departments')
-    department = ForeignKeyField(
-        Department, db_column='department',
-        related_name='_companies')
 
 
 @create
