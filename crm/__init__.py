@@ -248,8 +248,9 @@ class Employee(CRMModel):
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
-    company = ForeignKeyField(Company, related_name='customers')
-    piwik_tracking_id = IntegerField(null=True)
+    company = ForeignKeyField(
+        Company, db_column='company', related_name='customers')
+    annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
         """Returns the customer's full name"""
