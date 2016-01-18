@@ -14,5 +14,4 @@ setup(
               'homeinfo.lib'],
     package_dir={'homeinfo': ''},
     packages=['homeinfo.crm'],
-    description='HOMEINFO Customer Relationship Management ORM',
-)
+    description='HOMEINFO Customer Relationship Management ORM')
