@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from peewee import Model, PrimaryKeyField, CharField,\
     ForeignKeyField, DoesNotExist, IntegerField
 
-from homeinfo.peewee import MySQLDatabase, create
+from homeinfo.peewee import MySQLDatabase
 
 __all__ = ['Country', 'State', 'Address', 'Company', 'Department',
            'Employee', 'Customer']
