@@ -130,12 +130,19 @@ class Address(CRMModel):
             * Add address with either po_box or addr parameter
             * addr must be a tuple: (<street>, <house_number>, <zip_code>)
         """
+        po_box_addr_xor_err = ValueError('Must specify either po_box or addr')
+
         if po_box is None and addr is None:
-            raise ValueError('Must specify either po_box or addr')
+            raise po_box_addr_xor_err
         elif po_box is not None and addr is not None:
-            raise ValueError('Must specify either po_box or addr')
+            raise po_box_addr_xor_err
         elif addr is not None:
-            street, house_number, zip_code = addr
+            try:
+                street, house_number, zip_code = addr
+            except ValueError:
+                raise ValueError(
+                    'addr must be (street, house_number, zip_code)')
+
             if state is None:
                 try:
                     address = Address.get(
@@ -150,6 +157,7 @@ class Address(CRMModel):
                     address.house_number = house_number
                     address.zip_code = zip_code
                     address.save()
+
                 return address
             else:
                 try:
@@ -167,6 +175,7 @@ class Address(CRMModel):
                     address.zip_code = zip_code
                     address.state = state
                     address.save()
+
                 return address
         elif po_box is not None:
             if state is None:
@@ -176,6 +185,7 @@ class Address(CRMModel):
                     address = Address()
                     address.po_box = po_box
                     address.save()
+
                 return address
             else:
                 try:
@@ -187,9 +197,10 @@ class Address(CRMModel):
                     address.po_box = po_box
                     address.state = state
                     address.save()
+
                 return address
         else:
-            raise ValueError('Must specify either po_box or addr')
+            raise po_box_addr_xor_err
 
 
 @create

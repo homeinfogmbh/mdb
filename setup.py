@@ -10,8 +10,10 @@ setup(
     version=version,
     author=author,
     author_email=author_email,
-    requires=['peewee',
-              'homeinfo.lib'],
+    requires=[
+        'peewee',
+        'homeinfo-peewee',
+        'homeinfo.lib'],
     package_dir={'homeinfo': ''},
-    packages=['homeinfo.crm'],
+    py_modules=['homeinfo.crm.py'],
     description='HOMEINFO Customer Relationship Management ORM')
