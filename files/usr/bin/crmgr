@@ -1,0 +1,33 @@
+#! /usr/bin/env python3
+"""crmgr
+
+CRM database manager
+
+Usage:
+    crmgr search country <name> [--iso]
+    crmgr search state <name> [<country>] [--iso]
+    crmgr search address <addr>...
+    crmgr search company
+    crmgr search department
+    crmgr search employee
+    crmgr search customer
+
+    crmgr add country <iso> <name> [--original-name=<name>]
+    crmgr add state <country> <iso> <name>
+    crmgr add address <street> <house_number> <zip_code> <city> \
+[--state=<state>]
+    crmgr add po-box <po_box> <city> [--state=<state>]
+    crmgr add company <name> [--address=<address>] [--annotation=<annotation>]
+    crmgr add department <name> [--type=<type>]
+    crmgr add employee <company> <department> <surname> <phone> \
+[--fist-name=<name>] [--cellphone=<cellphone>] [--email=<email>] \
+[--alt-phone=<phone>] [--fax=<fax>] [--address=<address>]
+    crmgr add customer <company> [--annotation=<annotation>]
+"""
+from docopt import docopt
+
+
+if __name__ == '__main__':
+    options = docopt(__doc__)
+
+    raise NotImplementedError()

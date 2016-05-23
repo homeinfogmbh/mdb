@@ -16,4 +16,5 @@ setup(
         'homeinfo.lib'],
     package_dir={'homeinfo': ''},
     py_modules=['homeinfo.crm.py'],
+    data_files=[('/usr/bin', ['files/usr/bin/crmgr'])],
     description='HOMEINFO Customer Relationship Management ORM')
