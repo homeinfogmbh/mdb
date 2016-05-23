@@ -27,7 +27,6 @@ class CRMModel(Model):
     """The table's primary key"""
 
 
-@create
 class Country(CRMModel):
     """Country data"""
 
@@ -54,7 +53,6 @@ class Country(CRMModel):
             raise ValueError('ISO code must be exactly two characters long')
 
 
-@create
 class State(CRMModel):
     """Country data"""
 
@@ -84,7 +82,6 @@ class State(CRMModel):
         return '{0}-{1}'.format(self.country.iso, self.iso)
 
 
-@create
 class Address(CRMModel):
     """Address data"""
 
@@ -107,6 +104,7 @@ class Address(CRMModel):
     def __str__(self):
         """Converts the Address to a string"""
         result = ''
+
         if self.po_box:
             result += 'Postfach {0}\n'.format(self.po_box)
         elif self.street:
@@ -114,13 +112,18 @@ class Address(CRMModel):
                 result += '{0} {1}\n'.format(self.street, self.house_number)
             else:
                 result += '{0}\n'.format(self.street)
+
         if self.zip_code:
             result += '{0} {1}\n'.format(self.zip_code, self.city)
+
         state = self.state
+
         if state:
             country_name = str(self.state.country)
+
             if country_name not in ['Deutschland', 'Germany', 'DE']:
                 result += '{0}\n'.format(country_name)
+
         return result
 
     @classmethod
@@ -203,7 +206,6 @@ class Address(CRMModel):
             raise po_box_addr_xor_err
 
 
-@create
 class Company(CRMModel):
     """A company"""
 
@@ -220,7 +222,6 @@ class Company(CRMModel):
         return departments
 
 
-@create
 class Department(CRMModel):
     """Departments of companies"""
 
@@ -228,7 +229,6 @@ class Department(CRMModel):
     type = CharField(64, null=True)
 
 
-@create
 class Employee(CRMModel):
     """Employees"""
 
@@ -255,7 +255,6 @@ class Employee(CRMModel):
             return self.surname
 
 
-@create
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
