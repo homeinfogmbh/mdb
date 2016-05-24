@@ -2,7 +2,7 @@ FILE_LIST = ./.installed_files.txt
 ECHO = /bin/echo -e
 
 install:
-	@ ./setup.py install --record $(FILE_LIST)
+	install -m 755 ./crm.py /usr/local/lib/python3.4/dist-packages/homeinfo/
 
 uninstall:
 	@ while read FILE; do
