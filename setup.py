@@ -12,7 +12,7 @@ setup(
     author_email=author_email,
     requires=[
         'peewee',
-        'homeinfo-peewee',
+        'homeinfo.peewee',
         'homeinfo.lib'],
     package_dir={'homeinfo': ''},
     py_modules=['crm.py'],
