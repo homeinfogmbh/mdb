@@ -58,6 +58,8 @@ if __name__ == '__main__':
                 try:
                     customer = Customer.get(Customer.id == cid)
                 except DoesNotExist:
+                    exit(1)
+                else:
                     print(repr(customer), str(customer), sep=': ')
         else:
             raise NotImplementedError()
