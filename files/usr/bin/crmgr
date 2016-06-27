@@ -29,6 +29,8 @@ from logging import INFO, getLogger, basicConfig
 
 from peewee import DoesNotExist
 
+from homeinfo.crm import Customer
+
 
 if __name__ == '__main__':
     from docopt import docopt
