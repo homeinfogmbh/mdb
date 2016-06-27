@@ -50,8 +50,9 @@ if __name__ == '__main__':
                 if (ssl in country.iso.lower() or
                         ssl in country.name.lower() or
                         ssl in country.original_name.lower()):
-                    print(country.iso, ': ', country.name, ' / ',
-                          country.original_name, sep='')
+                    print(country.id, ': ', country.name, ' / ',
+                          country.original_name, ' (', country.iso, ')',
+                          sep='')
         elif options['customer']:
 
             try:
@@ -62,7 +63,7 @@ if __name__ == '__main__':
             if cid is None:
                 for customer in Customer:
                     if ssl in customer.name.lower():
-                        print(repr(customer), str(customer), sep=': ')
+                        print(customer.id, customer.name, sep=': ')
             else:
                 try:
                     customer = Customer.get(Customer.id == cid)
