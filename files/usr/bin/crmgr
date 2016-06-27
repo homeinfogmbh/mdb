@@ -11,7 +11,6 @@ Usage:
     crmgr search department <search_string>
     crmgr search employee <search_string>
     crmgr search customer <search_string>
-
     crmgr add country <iso> <name> [--original-name=<name>]
     crmgr add state <country> <iso> <name>
     crmgr add address <street> <house_number> <zip_code> <city> \
