@@ -7,10 +7,10 @@ Usage:
     crmgr search country <name> [--iso]
     crmgr search state <name> [<country>] [--iso]
     crmgr search address <addr>...
-    crmgr search company
-    crmgr search department
-    crmgr search employee
-    crmgr search customer
+    crmgr search company <search_string>
+    crmgr search department <search_string>
+    crmgr search employee <search_string>
+    crmgr search customer <search_string>
 
     crmgr add country <iso> <name> [--original-name=<name>]
     crmgr add state <country> <iso> <name>
@@ -24,10 +24,40 @@ Usage:
 [--alt-phone=<phone>] [--fax=<fax>] [--address=<address>]
     crmgr add customer <company> [--annotation=<annotation>]
 """
-from docopt import docopt
+from os.path import basename
+from logging import INFO, getLogger, basicConfig
+
+from peewee import DoesNotExist
 
 
 if __name__ == '__main__':
+    from docopt import docopt
+
+    binary = basename(__file__)
     options = docopt(__doc__)
 
-    raise NotImplementedError()
+    basicConfig(level=INFO)
+    logger = getLogger(binary)
+
+    if options['search']:
+        if options['customer']:
+            ss = options['<search_string>']
+
+            try:
+                cid = int(ss)
+            except ValueError:
+                cid = None
+
+            if cid is None:
+                for customer in Customer:
+                    if ss.lower() in customer.name.lower():
+                        print(repr(customer), str(customer), sep=': ')
+            else:
+                try:
+                    customer = Customer.get(Customer.id == cid)
+                except DoesNotExist:
+                    print(repr(customer), str(customer), sep=': ')
+        else:
+            raise NotImplementedError()
+    else:
+        raise NotImplementedError()
