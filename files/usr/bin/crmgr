@@ -48,8 +48,8 @@ if __name__ == '__main__':
         if options['country']:
             for country in Country:
                 if (ssl in country.iso.lower() or
-                        ssl in country.name or
-                        ssl in country.original_name):
+                        ssl in country.name.lower() or
+                        ssl in country.original_name.lower()):
                     print(country.iso, ': ', country.name, ' / ',
                           country.original_name, sep='')
         elif options['customer']:
