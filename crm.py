@@ -7,8 +7,14 @@ from peewee import Model, PrimaryKeyField, CharField,\
 
 from homeinfo.peewee import MySQLDatabase
 
-__all__ = ['Country', 'State', 'Address', 'Company', 'Department',
-           'Employee', 'Customer']
+__all__ = [
+    'Country',
+    'State',
+    'Address',
+    'Company',
+    'Department',
+    'Employee',
+    'Customer']
 
 
 class CRMModel(Model):
@@ -24,7 +30,6 @@ class CRMModel(Model):
         schema = database.database
 
     id = PrimaryKeyField()
-    """The table's primary key"""
 
 
 class Country(CRMModel):
@@ -269,10 +274,6 @@ class Customer(CRMModel):
     def __repr__(self):
         """Returns the customer's ID"""
         return str(self.id)
-
-    def __hash__(self):
-        """Returns a hash for this customer"""
-        return hash(repr(self))
 
     @property
     def sha256name(self):
