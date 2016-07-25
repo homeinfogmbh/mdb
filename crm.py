@@ -275,10 +275,6 @@ class Customer(CRMModel):
         """Returns the customer's ID"""
         return str(self.id)
 
-    def __hash__(self):
-        """Returns a hash for this customer"""
-        return hash((self.__class__, self._get_pk_value()))
-
     @property
     def sha256name(self):
         """Returns the SHA-256 encoded CID"""
