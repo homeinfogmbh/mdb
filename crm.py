@@ -277,7 +277,7 @@ class Customer(CRMModel):
 
     def __hash__(self):
         """Returns a hash for this customer"""
-        return hash(repr(self))
+        return hash((self.__class__, self._get_pk_value()))
 
     @property
     def sha256name(self):
