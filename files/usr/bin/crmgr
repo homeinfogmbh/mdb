@@ -43,7 +43,7 @@ __all__ = [
 def error(*args, **kwargs):
     """Prints errors to stderr"""
 
-    print(*args, **kwargs, file=stderr)
+    print(*args, file=stderr, **kwargs)
 
 
 class PrintMode():
