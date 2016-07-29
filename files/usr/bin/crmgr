@@ -133,8 +133,11 @@ if __name__ == '__main__':
             for state in find(State, pattern_lower):
                 mprint(state, mode)
         elif options['customer']:
-            for mode, customer in find(Customer, pattern_lower):
-                mprint(customer, mode)
+            for mode_, customer in find(Customer, pattern_lower):
+                if mode is PrintMode.ID:
+                    mprint(customer, mode_)
+                else:
+                    mprint(customer, mode)
         else:
             raise NotImplementedError()
     else:
