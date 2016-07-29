@@ -112,7 +112,7 @@ def mprint(model, mode=PrintMode.ID):
     elif mode is PrintMode.REPR:
         print(repr(model))
     else:
-        raise ValueError('Invalid model printing mode:' mode)
+        raise ValueError('Invalid model printing mode: {}'.format(mode))
 
 
 if __name__ == '__main__':
