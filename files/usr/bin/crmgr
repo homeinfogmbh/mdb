@@ -4,13 +4,13 @@
 CRM database manager
 
 Usage:
-    crmgr search country <search_string>
-    crmgr search state <search_string>
-    crmgr search address <search_string>
-    crmgr search company <search_string>
-    crmgr search department <search_string>
-    crmgr search employee <search_string>
-    crmgr search customer <search_string>
+    crmgr find country <pattern> [options]
+    crmgr find state <pattern> [options]
+    crmgr find address <pattern> [options]
+    crmgr find company <pattern> [options]
+    crmgr find department <pattern> [options]
+    crmgr find employee <pattern> [options]
+    crmgr find customer <pattern> [options]
     crmgr add country <iso> <name> [--original-name=<name>]
     crmgr add state <country> <iso> <name>
     crmgr add address <street> <house_number> <zip_code> <city> \
@@ -22,54 +22,119 @@ Usage:
 [--fist-name=<name>] [--cellphone=<cellphone>] [--email=<email>] \
 [--alt-phone=<phone>] [--fax=<fax>] [--address=<address>]
     crmgr add customer <company> [--annotation=<annotation>]
+
+Options:
+    --help          Prints this page.
+    --all           Prints complete data of search target.
 """
-from os.path import basename
-from logging import INFO, getLogger, basicConfig
+from sys import stderr
 
 from peewee import DoesNotExist
 
 from homeinfo.crm import Country, State, Address, Company, Customer
 
+__all__ = [
+    'error',
+    'PrintMode',
+    'find',
+    'mprint']
+
+
+def error(*args, **kwargs):
+    """Prints errors to stderr"""
+
+    print(*args, **kwargs, file=stderr)
+
+
+class PrintMode():
+    """Model printing modes"""
+
+    ID = 'id'
+    STR = 'str'
+    REPR = 'repr'
+
+
+def find(model, pattern):
+    """Find model matching pattern"""
+
+    if model is Country:
+        for country in model:
+            if (pattern in country.iso.lower() or
+                    pattern in country.name.lower() or
+                    pattern in country.original_name.lower()):
+                yield country
+    elif model is State:
+        try:
+            country = int(pattern)
+        except ValueError:
+            country = None
+
+        if country is None:
+            if len(pattern == 2):
+                for state in model:
+                    if state.iso == pattern:
+                        yield state
+            else:
+                for state in model:
+                    if state.name.lower() == pattern:
+                        yield state
+        else:
+            for state in model.select().where(model.country == country):
+                yield state
+    elif model is Customer:
+        try:
+            cid = int(pattern)
+        except ValueError:
+            cid = None
+
+        if cid is None:
+            for customer in Customer:
+                if pattern in customer.name.lower():
+                    yield (PrintMode.ID, customer)
+        else:
+            try:
+                customer = Customer.get(Customer.id == cid)
+            except DoesNotExist:
+                error('No customer for CID', cid)
+            else:
+                yield (PrintMode.STR, customer)
+    else:
+        raise NotImplementedError()
+
+
+def mprint(model, mode=PrintMode.ID):
+    """Prints the respective model instance"""
+
+    if mode is PrintMode.ID:
+        print(model.id)
+    elif mode is PrintMode.STR:
+        print(str(model))
+    elif mode is PrintMode.REPR:
+        print(repr(model))
+    else:
+        raise ValueError('Invalid model printing mode:' mode)
+
 
 if __name__ == '__main__':
     from docopt import docopt
 
-    binary = basename(__file__)
     options = docopt(__doc__)
 
-    basicConfig(level=INFO)
-    logger = getLogger(binary)
+    all = options['--all']
 
-    if options['search']:
-        ss = options['<search_string>']
-        ssl = ss.lower()
+    if options['find']:
+        pattern = options['<pattern>']
+        pattern_lower = pattern.lower()
 
         if options['country']:
-            for country in Country:
-                if (ssl in country.iso.lower() or
-                        ssl in country.name.lower() or
-                        ssl in country.original_name.lower()):
-                    print(country.id, ': ', country.name, ' / ',
-                          country.original_name, ' (', country.iso, ')',
-                          sep='')
+            for country in find(Country, pattern_lower):
+                mprint(country)
+        elif options['state']:
+            for state in find(State, pattern_lower):
+                mprint(state)
         elif options['customer']:
-
-            try:
-                cid = int(ss)
-            except ValueError:
-                cid = None
-
-            if cid is None:
-                for customer in Customer:
-                    if ssl in customer.name.lower():
-                        print(customer.id, customer.name, sep=': ')
-            else:
-                try:
-                    customer = Customer.get(Customer.id == cid)
-                except DoesNotExist:
-                    exit(1)
-                else:
-                    print(repr(customer), str(customer), sep=': ')
+            for mode, customer in find(Customer, pattern_lower):
+                mprint(customer, mode=mode)
         else:
             raise NotImplementedError()
     else:
