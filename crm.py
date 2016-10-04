@@ -111,12 +111,12 @@ class Address(CRMModel):
         result = ''
 
         if self.po_box:
-            result += 'Postfach {0}\n'.format(self.po_box)
+            result += 'Postfach {}\n'.format(self.po_box)
         elif self.street:
             if self.house_number:
                 result += '{0} {1}\n'.format(self.street, self.house_number)
             else:
-                result += '{0}\n'.format(self.street)
+                result += '{}\n'.format(self.street)
 
         if self.zip_code:
             result += '{0} {1}\n'.format(self.zip_code, self.city)
@@ -127,7 +127,7 @@ class Address(CRMModel):
             country_name = str(self.state.country)
 
             if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += '{0}\n'.format(country_name)
+                result += '{}\n'.format(country_name)
 
         return result
 
