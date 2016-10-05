@@ -218,6 +218,16 @@ class Company(CRMModel):
     address = ForeignKeyField(Address, db_column='address', null=True)
     annotation = CharField(256, null=True)
 
+    @classmethod
+    def find(cls, id_or_name):
+        """Finds companies by primary key or name"""
+        try:
+            ident = int(id_or_name)
+        except ValueError:
+            return cls.get(cls.name == id_or_name)
+        else:
+            return cls.get(cls.id == ident)
+
     @property
     def departments(self):
         """Returns the company's departments"""
@@ -274,6 +284,16 @@ class Customer(CRMModel):
     def __repr__(self):
         """Returns the customer's ID"""
         return str(self.id)
+
+    @classmethod
+    def find(cls, id_or_company_name):
+        """Finds customers by primary key or company name"""
+        try:
+            ident = int(id_or_company_name)
+        except ValueError:
+            return cls.get(cls.company == Company.find(id_or_company_name))
+        else:
+            return cls.get(cls.id == ident)
 
     @property
     def sha256name(self):
