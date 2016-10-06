@@ -1,9 +1,8 @@
 """HOMEINFO's CRM database configuration and models"""
 
 from hashlib import sha256
-from configparser import ConfigParser
-from peewee import Model, PrimaryKeyField, CharField,\
-    ForeignKeyField, DoesNotExist, IntegerField
+from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
+    DoesNotExist
 
 from homeinfo.peewee import MySQLDatabase
 
