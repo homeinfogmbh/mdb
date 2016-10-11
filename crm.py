@@ -13,8 +13,7 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer',
-    'Resale']
+    'Customer']
 
 
 class CRMModel(Model):
@@ -236,44 +235,6 @@ class Company(CRMModel):
             departments.add(employee.department)
         return departments
 
-    def resells(self, who=None):
-        """Determines whether the company is a reseller"""
-        if who is None:
-            try:
-                Resale.get(Resale.reseller == self)
-            except DoesNotExist:
-                return False
-            else:
-                return True
-        else:
-            try:
-                Resale.get(
-                    (Resale.reseller == self) &
-                    (Resale.customer == who))
-            except DoesNotExist:
-                return False
-            else:
-                return True
-
-    def resold(self, by=None):
-        """Determines whether the company is being resold"""
-        if by is None:
-            try:
-                Resale.get(Resale.customer == self)
-            except DoesNotExist:
-                return False
-            else:
-                return True
-        else:
-            try:
-                Resale.get(
-                    (Resale.customer == self) &
-                    (Resale.reseller == by))
-            except DoesNotExist:
-                return False
-            else:
-                return True
-
 
 class Department(CRMModel):
     """Departments of companies"""
@@ -313,6 +274,9 @@ class Customer(CRMModel):
 
     company = ForeignKeyField(
         Company, db_column='company', related_name='customers')
+    reseller = ForeignKeyField(Company, db_column='reseller')
+    # Customer ID assigned by reseller to customer
+    cid = CharField(255)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
@@ -343,11 +307,40 @@ class Customer(CRMModel):
         """Returns the customer's name"""
         return str(self.company.name) if self.company else ''
 
+    def resells(self, who=None):
+        """Determines whether the company is a reseller"""
+        if who is None:
+            try:
+                self.__class__.get(self.__class__.reseller == self)
+            except DoesNotExist:
+                return False
+            else:
+                return True
+        else:
+            try:
+                self.__class__.get(
+                    (self.__class__.reseller == self) &
+                    (self.__class__.company == who))
+            except DoesNotExist:
+                return False
+            else:
+                return True
 
-class Resale(CRMModel):
-    """Reseller mappings to replace *Customer*"""
-
-    reseller = ForeignKeyField(Company, db_column='reseller')
-    customer = ForeignKeyField(Company, db_column='customer')
-    # Customer ID assigned by reseller to customer
-    cid = CharField(255)
+    def resold(self, by=None):
+        """Determines whether the company is being resold"""
+        if by is None:
+            try:
+                self.__class__.get(self.__class__.customer == self)
+            except DoesNotExist:
+                return False
+            else:
+                return True
+        else:
+            try:
+                self.__class__.get(
+                    (self.__class__.company == self) &
+                    (self.__class__.reseller == by))
+            except DoesNotExist:
+                return False
+            else:
+                return True
