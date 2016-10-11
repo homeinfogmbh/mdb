@@ -13,7 +13,8 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer']
+    'Customer',
+    'Resale']
 
 
 class CRMModel(Model):
@@ -303,3 +304,12 @@ class Customer(CRMModel):
     def name(self):
         """Returns the customer's name"""
         return str(self.company.name) if self.company else ''
+
+
+class Resale(CRMModel):
+    """Reseller mappings to replace *Customer*"""
+
+    reseller = ForeignKeyField(Company, db_column='reseller')
+    customer = ForeignKeyField(Company, db_column='customer')
+    # Customer ID assigned by reseller to customer
+    cid = CharField(255)
