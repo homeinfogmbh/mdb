@@ -236,6 +236,44 @@ class Company(CRMModel):
             departments.add(employee.department)
         return departments
 
+    def resells(self, who=None):
+        """Determines whether the company is a reseller"""
+        if who is None:
+            try:
+                Resale.get(Resale.reseller == self)
+            except DoesNotExist:
+                return False
+            else:
+                return True
+        else:
+            try:
+                Resale.get(
+                    (Resale.reseller == self) &
+                    (Resale.customer == who))
+            except DoesNotExist:
+                return False
+            else:
+                return True
+
+    def resold(self, by=None):
+        """Determines whether the company is being resold"""
+        if by is None:
+            try:
+                Resale.get(Resale.customer == self)
+            except DoesNotExist:
+                return False
+            else:
+                return True
+        else:
+            try:
+                Resale.get(
+                    (Resale.customer == self) &
+                    (Resale.reseller == by))
+            except DoesNotExist:
+                return False
+            else:
+                return True
+
 
 class Department(CRMModel):
     """Departments of companies"""
