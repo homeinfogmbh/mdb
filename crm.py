@@ -231,8 +231,10 @@ class Company(CRMModel):
     def departments(self):
         """Returns the company's departments"""
         departments = set()
+
         for employee in self.employees:
             departments.add(employee.department)
+
         return departments
 
 
@@ -272,9 +274,9 @@ class Employee(CRMModel):
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
+    reseller = ForeignKeyField(Company, db_column='reseller')
     company = ForeignKeyField(
         Company, db_column='company', related_name='customers')
-    reseller = ForeignKeyField(Company, db_column='reseller')
     # Customer ID assigned by reseller to customer
     cid = CharField(255)
     annotation = CharField(255, null=True, default=None)
