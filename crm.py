@@ -309,40 +309,7 @@ class Customer(CRMModel):
         """Returns the customer's name"""
         return str(self.company.name) if self.company else ''
 
-    def resells(self, who=None):
+    @property
+    def resells(self):
         """Determines whether the company is a reseller"""
-        if who is None:
-            try:
-                self.__class__.get(self.__class__.reseller == self)
-            except DoesNotExist:
-                return False
-            else:
-                return True
-        else:
-            try:
-                self.__class__.get(
-                    (self.__class__.reseller == self) &
-                    (self.__class__.company == who))
-            except DoesNotExist:
-                return False
-            else:
-                return True
-
-    def resold(self, by=None):
-        """Determines whether the company is being resold"""
-        if by is None:
-            try:
-                self.__class__.get(self.__class__.customer == self)
-            except DoesNotExist:
-                return False
-            else:
-                return True
-        else:
-            try:
-                self.__class__.get(
-                    (self.__class__.company == self) &
-                    (self.__class__.reseller == by))
-            except DoesNotExist:
-                return False
-            else:
-                return True
+        return self.__class__.select().where(self.__class__.reseller == self)
