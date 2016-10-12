@@ -310,6 +310,6 @@ class Customer(CRMModel):
         return str(self.company.name) if self.company else ''
 
     @property
-    def resells(self):
-        """Determines whether the company is a reseller"""
+    def resales(self):
+        """Yields customers this customer resells"""
         return self.__class__.select().where(self.__class__.reseller == self)
