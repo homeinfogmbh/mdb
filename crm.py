@@ -237,6 +237,11 @@ class Company(CRMModel):
 
         return departments
 
+    @property
+    def resales(self):
+        """Yields customers this customer resells"""
+        return Customer.select().where(Customer.reseller == self)
+
 
 class Department(CRMModel):
     """Departments of companies"""
@@ -312,4 +317,4 @@ class Customer(CRMModel):
     @property
     def resales(self):
         """Yields customers this customer resells"""
-        return self.__class__.select().where(self.__class__.reseller == self)
+        return self.company.resales
