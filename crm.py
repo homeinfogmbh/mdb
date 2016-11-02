@@ -37,7 +37,7 @@ class Country(CRMModel):
     # An *exactly* two characters long ISO 3166-2 state code
     _iso = CharField(2, db_column='iso')
     name = CharField(64)
-    original_name = CharField(64, null=True)
+    original_name = CharField(64, null=True, default=None)
 
     def __str__(self):
         """Converts the country to a string"""
@@ -55,6 +55,17 @@ class Country(CRMModel):
             self._iso = iso
         else:
             raise ValueError('ISO code must be exactly two characters long')
+
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {
+            'iso': self.iso,
+            'name': self.name}
+
+        if self.original_name is not None:
+            dictionary['original_name'] = self.original_name
+
+        return dictionary
 
 
 class State(CRMModel):
@@ -84,6 +95,13 @@ class State(CRMModel):
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code"""
         return '{0}-{1}'.format(self.country.iso, self.iso)
+
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        return {
+            'country': self.country.id,
+            'iso': self.iso,
+            'name': self.name}
 
 
 class Address(CRMModel):
@@ -209,6 +227,27 @@ class Address(CRMModel):
         else:
             raise po_box_addr_xor_err
 
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {'city': self.city}
+
+        if self.street is not None:
+            dictionary['street'] = self.street
+
+        if self.house_number is not None:
+            dictionary['house_number'] = self.house_number
+
+        if self.zip_code is not None:
+            dictionary['zip_code'] = self.zip_code
+
+        if self.po_box is not None:
+            dictionary['po_box'] = self.po_box
+
+        if self.state is not None:
+            dictionary['state'] = self.state.to_dict()
+
+        return dictionary
+
 
 class Company(CRMModel):
     """A company"""
@@ -242,12 +281,33 @@ class Company(CRMModel):
         """Yields customers this customer resells"""
         return Customer.select().where(Customer.reseller == self)
 
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {'name': self.name}
+
+        if self.address is not None:
+            dictionary['address'] = self.address.id
+
+        if self.address is not None:
+            dictionary['annotation'] = self.annotation
+
+        return dictionary
+
 
 class Department(CRMModel):
     """Departments of companies"""
 
     name = CharField(64)
     type = CharField(64, null=True)
+
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {'name': self.name}
+
+        if self.type is not None:
+            dictionary['type'] = self.type
+
+        return dictionary
 
 
 class Employee(CRMModel):
@@ -274,6 +334,38 @@ class Employee(CRMModel):
             return ' '.join([self.first_name, self.surname])
         else:
             return self.surname
+
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {
+            'surname': self.surname,
+            'phone': self.phone}
+
+        if self.company is not None:
+            dictionary['company'] = self.company.id
+
+        if self.department is not None:
+            dictionary['department'] = self.department.id
+
+        if self.first_name is not None:
+            dictionary['first_name'] = self.first_name
+
+        if self.cellphone is not None:
+            dictionary['cellphone'] = self.cellphone
+
+        if self.email is not None:
+            dictionary['email'] = self.email
+
+        if self.phone_alt is not None:
+            dictionary['phone_alt'] = self.phone_alt
+
+        if self.fax is not None:
+            dictionary['fax'] = self.fax
+
+        if self.address is not None:
+            dictionary['address'] = self.address.id
+
+        return dictionary
 
 
 class Customer(CRMModel):
@@ -318,3 +410,15 @@ class Customer(CRMModel):
     def resales(self):
         """Yields customers this customer resells"""
         return self.company.resales
+
+    def to_dict(self):
+        """Returns a JSON-like dictionary"""
+        dictionary = {
+            'reseller': self.reseller.id,
+            'company': self.company.id,
+            'cid': self.cid}
+
+        if self.annotation is not None:
+            dictionary['annotation'] = self.annotation
+
+        return dictionary
