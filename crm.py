@@ -7,7 +7,6 @@ from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
 from homeinfo.peewee import MySQLDatabase
 
 __all__ = [
-    'database',
     'Country',
     'State',
     'Address',
