@@ -7,6 +7,7 @@ from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
 from homeinfo.peewee import MySQLDatabase
 
 __all__ = [
+    'database',
     'Country',
     'State',
     'Address',
@@ -16,16 +17,19 @@ __all__ = [
     'Customer']
 
 
+database = MySQLDatabase(
+    'crm',
+    host='localhost',
+    user='crm',
+    passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
+    closing=True)
+
+
 class CRMModel(Model):
     """Generic HOMEINFO CRM Model"""
 
     class Meta:
-        database = MySQLDatabase(
-            'crm',
-            host='localhost',
-            user='crm',
-            passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
-            closing=True)
+        database = database
         schema = database.database
 
     id = PrimaryKeyField()
