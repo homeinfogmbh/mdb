@@ -230,7 +230,7 @@ class Address(CRMModel):
         else:
             raise po_box_addr_xor_err
 
-    def to_dict(self):
+    def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary"""
         dictionary = {'city': self.city}
 
@@ -247,7 +247,10 @@ class Address(CRMModel):
             dictionary['po_box'] = self.po_box
 
         if self.state is not None:
-            dictionary['state'] = self.state.to_dict()
+            if cascade:
+                dictionary['state'] = self.state.to_dict()
+            else:
+                dictionary['state'] = self.state.iso
 
         return dictionary
 
@@ -284,12 +287,15 @@ class Company(CRMModel):
         """Yields customers this customer resells"""
         return Customer.select().where(Customer.reseller == self)
 
-    def to_dict(self):
+    def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary"""
         dictionary = {'name': self.name}
 
         if self.address is not None:
-            dictionary['address'] = self.address.id
+            if cascade:
+                dictionary['address'] = self.address.to_dict(cascade=cascade)
+            else:
+                dictionary['address'] = str(self.address)
 
         if self.address is not None:
             dictionary['annotation'] = self.annotation
@@ -390,19 +396,19 @@ class Customer(CRMModel):
         return str(self.id)
 
     @classmethod
-    def find(cls, id_or_company_name):
+    def find(cls, key):
         """Finds customers by primary key or company name"""
         try:
-            ident = int(id_or_company_name)
+            ident = int(key)
         except ValueError:
-            return cls.get(cls.company == Company.find(id_or_company_name))
+            return cls.get(cls.company == Company.find(key))
         else:
             return cls.get(cls.id == ident)
 
     @property
     def sha256name(self):
         """Returns the SHA-256 encoded CID"""
-        return str(sha256(str(self.id).encode()).hexdigest())
+        return sha256(self.cid.encode()).hexdigest()
 
     @property
     def name(self):
@@ -414,12 +420,16 @@ class Customer(CRMModel):
         """Yields customers this customer resells"""
         return self.company.resales
 
-    def to_dict(self):
+    def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary"""
-        dictionary = {
-            'reseller': self.reseller.id,
-            'company': self.company.id,
-            'cid': self.cid}
+        dictionary = {'cid': self.cid}
+
+        if cascade:
+            dictionary['reseller'] = self.reseller.to_dict(cascade=cascade)
+            dictionary['company'] = self.company.to_dict(cascade=cascade)
+        else:
+            dictionary['reseller'] = self.reseller.id
+            dictionary['company'] = self.company.id
 
         if self.annotation is not None:
             dictionary['annotation'] = self.annotation
