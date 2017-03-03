@@ -401,7 +401,10 @@ class Customer(CRMModel):
         try:
             ident = int(key)
         except ValueError:
-            return cls.get(cls.company == Company.find(key))
+            try:
+                return cls.get(cls.cid == key)
+            except DoesNotExist:
+                return cls.get(cls.company == Company.find(key))
         else:
             return cls.get(cls.id == ident)
 
