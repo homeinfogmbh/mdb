@@ -13,7 +13,8 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer']
+    'Customer',
+    'Tenement']
 
 
 database = MySQLDatabase(
@@ -438,3 +439,28 @@ class Customer(CRMModel):
             dictionary['annotation'] = self.annotation
 
         return dictionary
+
+
+class Tenement(CRMModel):
+    """Stores tenements of the respective customers"""
+
+    customer = ForeignKeyField(Customer, db_column='customer')
+    address = ForeignKeyField(Address, db_column='address')
+
+    @classmethod
+    def add(cls, customer, address):
+        """Adds a new tenement"""
+        try:
+            return cls.get(
+                (cls.customer == customer) &
+                (cls.address == address))
+        except DoesNotExist:
+            tenement = cls()
+            tenement.customer = customer
+            tenement.address = address
+            tenement.save()
+            return tenement
+
+    def to_dict(self):
+        """Returns the tenement as a dictionary"""
+        return self.address.to_dict()
