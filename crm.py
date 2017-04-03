@@ -4,6 +4,7 @@ from hashlib import sha256
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
 
+from homeinfo.lib.config import Configuration
 from homeinfo.peewee import MySQLDatabase
 
 __all__ = [
@@ -17,11 +18,12 @@ __all__ = [
     'Tenement']
 
 
+config = Configuration('/usr/local/etc/crm.conf')
 database = MySQLDatabase(
-    'crm',
-    host='localhost',
-    user='crm',
-    passwd='Z"XO;$2K+>XEo}jK>6-+}|U@,|E/6_&W',
+    config['db']['db'],
+    host=config['db']['host'],
+    user=config['db']['user'],
+    passwd=config['db']['passwd'],
     closing=True)
 
 
