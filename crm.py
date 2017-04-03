@@ -18,7 +18,7 @@ __all__ = [
     'Tenement']
 
 
-config = Configuration('/usr/local/etc/crm.conf')
+config = Configuration('/etc/crm.conf')
 database = MySQLDatabase(
     config['db']['db'],
     host=config['db']['host'],
