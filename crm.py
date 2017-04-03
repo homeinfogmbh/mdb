@@ -176,7 +176,7 @@ class Address(CRMModel):
 
             if state is None:
                 try:
-                    address = Address.get(
+                    return Address.get(
                         (Address.city == city) &
                         (Address.street == street) &
                         (Address.house_number == house_number) &
@@ -188,11 +188,10 @@ class Address(CRMModel):
                     address.house_number = house_number
                     address.zip_code = zip_code
                     address.save()
-
-                return address
+                    return address
             else:
                 try:
-                    address = Address.get(
+                    return Address.get(
                         (Address.city == city) &
                         (Address.street == street) &
                         (Address.house_number == house_number) &
@@ -206,21 +205,19 @@ class Address(CRMModel):
                     address.zip_code = zip_code
                     address.state = state
                     address.save()
-
-                return address
+                    return address
         elif po_box is not None:
             if state is None:
                 try:
-                    address = Address.get(Address.po_box == po_box)
+                    return Address.get(Address.po_box == po_box)
                 except DoesNotExist:
                     address = Address()
                     address.po_box = po_box
                     address.save()
-
-                return address
+                    return address
             else:
                 try:
-                    address = Address.get(
+                    return Address.get(
                         (Address.po_box == po_box) &
                         (Address.state == state))
                 except DoesNotExist:
@@ -228,8 +225,7 @@ class Address(CRMModel):
                     address.po_box = po_box
                     address.state = state
                     address.save()
-
-                return address
+                    return address
         else:
             raise po_box_addr_xor_err
 
