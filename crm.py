@@ -100,7 +100,7 @@ class State(CRMModel):
     @property
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code"""
-        return '{0}-{1}'.format(self.country.iso, self.iso)
+        return '{}-{}'.format(self.country.iso, self.iso)
 
     def to_dict(self):
         """Returns a JSON-like dictionary"""
@@ -123,9 +123,9 @@ class Address(CRMModel):
     def __repr__(self):
         """Converts the Address to a one-line string"""
         if self.po_box:
-            return '{0} {1}'.format(self.po_box, self.city)
+            return '{} {}'.format(self.po_box, self.city)
         else:
-            return '{0} {1}, {2} {3}'.format(
+            return '{} {}, {} {}'.format(
                 self.street, self.house_number,
                 self.zip_code, self.city)
 
@@ -137,12 +137,12 @@ class Address(CRMModel):
             result += 'Postfach {}\n'.format(self.po_box)
         elif self.street:
             if self.house_number:
-                result += '{0} {1}\n'.format(self.street, self.house_number)
+                result += '{} {}\n'.format(self.street, self.house_number)
             else:
                 result += '{}\n'.format(self.street)
 
         if self.zip_code:
-            result += '{0} {1}\n'.format(self.zip_code, self.city)
+            result += '{} {}\n'.format(self.zip_code, self.city)
 
         state = self.state
 
