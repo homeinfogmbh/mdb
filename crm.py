@@ -4,8 +4,8 @@ from hashlib import sha256
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
 
-from homeinfo.lib.config import Configuration
-from homeinfo.peewee import MySQLDatabase
+from peeweeplus import MySQLDatabase
+from configparserplus import ConfigParserPlus
 
 __all__ = [
     'Country',
@@ -18,7 +18,7 @@ __all__ = [
     'Tenement']
 
 
-config = Configuration('/etc/crm.conf')
+config = ConfigParserPlus('/etc/crm.conf')
 database = MySQLDatabase(
     config['db']['db'],
     host=config['db']['host'],
