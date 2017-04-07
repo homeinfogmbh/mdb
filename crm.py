@@ -459,6 +459,11 @@ class Tenement(CRMModel):
             tenement.save()
             return tenement
 
+    @classmethod
+    def of(cls, customer):
+        """Yields tenements of the respective customer"""
+        return cls.select().where(cls.customer == customer)
+
     def to_dict(self):
         """Returns the tenement as a dictionary"""
         return self.address.to_dict()
