@@ -7,7 +7,7 @@ setup(
     version='latest',
     author='Richard Neumann',
     package_dir={'homeinfo': ''},
-    py_modules=['homeinfo.crm'],
+    py_modules=['homeinfo.crm', 'homeinfo.applicationdb'],
     data_files=[
         ('/usr/bin',
          ['files/usr/bin/crmgr'])],
