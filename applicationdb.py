@@ -35,27 +35,6 @@ class ApplicationModel(Model):
     id = PrimaryKeyField()
 
 
-class TenantMessage(ApplicationModel):
-    """Tenant to tenant messages"""
-
-    terminal = ForeignKeyField(Terminal, db_column='terminal')
-    message = TextField()
-    created = DateTimeField()
-    released = BooleanField(default=False)
-    start_date = DateTimeField(null=True, default=None)
-    end_date = DateTimeField(null=True, default=None)
-
-    @classmethod
-    def add(cls, terminal, message):
-        """Creates a new entry for the respective terminal"""
-        record = cls()
-        record.terminal = terminal
-        record.message = message
-        record.created = datetime.now()
-        record.save()
-        return record
-
-
 class Command(ApplicationModel):
     """Command entries"""
 
@@ -86,6 +65,28 @@ class Command(ApplicationModel):
         if force or self.completed is None:
             self.completed = datetime.now()
             self.save()
+
+
+class Statistic(ApplicationModel):
+    """Usage statistics entries"""
+
+    customer = ForeignKeyField(Customer, db_column='customer')
+    vid = IntegerField()
+    tid = IntegerField(null=True, default=None)
+    document = CharField(255)
+    timestamp = DateTimeField()
+
+    @classmethod
+    def add(cls, customer, vid, tid, document):
+        """Adds a new statistics entry"""
+        record = cls()
+        record.customer = customer
+        record.vid = vid
+        record.tid = tid
+        record.document = document
+        record.timestamp = datetime.now()
+        record.save()
+        return record
 
 
 class CleaningUser(ApplicationModel):
@@ -146,3 +147,27 @@ class Cleaning(ApplicationModel):
             'user': self.user.to_dict(),
             'address': self.address.to_dict(),
             'timestamp': self.timestamp.isoformat()}
+
+
+class TenantMessage(ApplicationModel):
+    """Tenant to tenant messages"""
+
+    class Meta:
+        db_table = 'tenant_message'
+
+    terminal = ForeignKeyField(Terminal, db_column='terminal')
+    message = TextField()
+    created = DateTimeField()
+    released = BooleanField(default=False)
+    start_date = DateTimeField(null=True, default=None)
+    end_date = DateTimeField(null=True, default=None)
+
+    @classmethod
+    def add(cls, terminal, message):
+        """Creates a new entry for the respective terminal"""
+        record = cls()
+        record.terminal = terminal
+        record.message = message
+        record.created = datetime.now()
+        record.save()
+        return record
