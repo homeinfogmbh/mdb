@@ -5,6 +5,7 @@ from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
     TextField, DateTimeField, BooleanField, IntegerField, CharField, \
     SmallIntegerField
 
+from configparserplus import ConfigParserPlus
 from homeinfo.crm import Address, Customer
 from homeinfo.terminals.orm import Terminal
 from peeweeplus import MySQLDatabase

@@ -4,8 +4,8 @@ from hashlib import sha256
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
 
-from peeweeplus import MySQLDatabase
 from configparserplus import ConfigParserPlus
+from peeweeplus import MySQLDatabase
 
 __all__ = [
     'Country',
