@@ -88,6 +88,12 @@ class Statistic(ApplicationModel):
         record.save()
         return record
 
+    @property
+    def terminal(self):
+        """Returns the appropriate terminal"""
+        if self.tid is not None:
+            return Terminal.by_ids(self.customer.id, self.tid)
+
 
 class CleaningUser(ApplicationModel):
     """Cleaning users"""
