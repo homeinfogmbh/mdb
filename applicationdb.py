@@ -130,6 +130,10 @@ class CleaningUser(ApplicationModel):
         else:
             raise DuplicateUserError()
 
+    def to_dict(self):
+        """Returns a JSON compliant dictionary"""
+        return {'name': self.name, 'annotation': self.annotation}
+
 
 class Cleaning(ApplicationModel):
     """Cleaning chart entries"""
@@ -148,12 +152,16 @@ class Cleaning(ApplicationModel):
         record.save()
         return record
 
-    def to_dict(self):
+    def to_dict(self, address=False):
         """Returns a JSON compliant dictionary"""
-        return {
+        dictionary = {
             'user': self.user.to_dict(),
-            'address': self.address.to_dict(),
             'timestamp': self.timestamp.isoformat()}
+
+        if address:
+            dictionary['address'] = self.address.to_dict()
+
+        return dictionary
 
 
 class TenantMessage(ApplicationModel):
