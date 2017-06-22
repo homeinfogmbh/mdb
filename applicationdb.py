@@ -135,7 +135,7 @@ class CleaningUser(ApplicationModel):
         return {'name': self.name, 'annotation': self.annotation}
 
 
-class Cleaning(ApplicationModel):
+class CleaningDate(ApplicationModel):
     """Cleaning chart entries"""
 
     class Meta:
