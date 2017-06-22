@@ -68,7 +68,7 @@ class Command(ApplicationModel):
             self.save()
 
 
-class Statistic(ApplicationModel):
+class Statistics(ApplicationModel):
     """Usage statistics entries"""
 
     customer = ForeignKeyField(Customer, db_column='customer')
