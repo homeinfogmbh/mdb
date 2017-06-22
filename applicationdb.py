@@ -161,7 +161,8 @@ class CleaningDate(ApplicationModel):
         dictionary = {}
 
         for cleaning_date in cls.select().where(cls.address == address):
-            dictionary[cleaning_date.isoformat()] = cleaning_date.user.name
+            date_time = cleaning_date.timestamp.isoformat()
+            dictionary[date_time] = cleaning_date.user.name
 
         return dictionary
 
