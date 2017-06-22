@@ -155,17 +155,22 @@ class CleaningDate(ApplicationModel):
         record.save()
         return record
 
-    def to_dict(self, verbose=False):
+    @classmethod
+    def dict_for(cls, address):
+        """Returns a dictionary for the respective address"""
+        dictionary = {}
+
+        for cleaning_date in cls.select().where(cls.address == address):
+            dictionary[cleaning_date.isoformat()] = cleaning_date.user.name
+
+        return dictionary
+
+    def to_dict(self):
         """Returns a JSON compliant dictionary"""
-        if verbose:
-            return {
-                'user': self.user.to_dict(),
-                'timestamp': self.timestamp.isoformat(),
-                'address': self.address.to_dict()}
-        else:
-            return {
-                'name': self.user.name,
-                'timestamp': self.timestamp.isoformat()}
+        return {
+            'user': self.user.to_dict(),
+            'timestamp': self.timestamp.isoformat(),
+            'address': self.address.to_dict()}
 
 
 class TenantMessage(ApplicationModel):
