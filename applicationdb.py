@@ -155,16 +155,17 @@ class CleaningDate(ApplicationModel):
         record.save()
         return record
 
-    def to_dict(self, address=False):
+    def to_dict(self, verbose=False):
         """Returns a JSON compliant dictionary"""
-        dictionary = {
-            'user': self.user.to_dict(),
-            'timestamp': self.timestamp.isoformat()}
-
-        if address:
-            dictionary['address'] = self.address.to_dict()
-
-        return dictionary
+        if verbose:
+            return {
+                'user': self.user.to_dict(),
+                'timestamp': self.timestamp.isoformat(),
+                'address': self.address.to_dict()}
+        else:
+            return {
+                'name': self.user.name,
+                'timestamp': self.timestamp.isoformat()}
 
 
 class TenantMessage(ApplicationModel):
