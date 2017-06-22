@@ -3,7 +3,7 @@
 from datetime import datetime
 from peewee import DoesNotExist, Model, PrimaryKeyField, ForeignKeyField, \
     TextField, DateTimeField, BooleanField, IntegerField, CharField, \
-    SmallIntegerField
+    DateField
 
 from configparserplus import ConfigParserPlus
 from homeinfo.crm import Address, Customer
@@ -100,11 +100,11 @@ class CleaningUser(ApplicationModel):
     """Cleaning users"""
 
     class Meta:
-        db_table = 'cleaning_users'
+        db_table = 'cleaning_user'
 
     name = CharField(64)
     customer = ForeignKeyField(Customer, db_column='customer')
-    pin = SmallIntegerField()
+    pin = CharField(4)
     annotation = CharField(255, null=True, default=None)
     created = DateTimeField()
     enabled = BooleanField(default=False)
@@ -137,6 +137,9 @@ class CleaningUser(ApplicationModel):
 
 class Cleaning(ApplicationModel):
     """Cleaning chart entries"""
+
+    class Meta:
+        db_table = 'cleaning_date'
 
     user = ForeignKeyField(CleaningUser, db_column='user')
     address = ForeignKeyField(Address, db_column='address')
@@ -174,8 +177,8 @@ class TenantMessage(ApplicationModel):
     message = TextField()
     created = DateTimeField()
     released = BooleanField(default=False)
-    start_date = DateTimeField(null=True, default=None)
-    end_date = DateTimeField(null=True, default=None)
+    start_date = DateField(null=True, default=None)
+    end_date = DateField(null=True, default=None)
 
     @classmethod
     def add(cls, terminal, message):
