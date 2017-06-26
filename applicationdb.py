@@ -218,6 +218,9 @@ class TenantMessage(ApplicationModel):
 class DamageReport(ApplicationModel):
     """Damage reports"""
 
+    class Meta:
+        db_table = 'damage_report'
+
     terminal = ForeignKeyField(Terminal, db_column='terminal')
     message = TextField()
     name = CharField(255)
