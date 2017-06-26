@@ -162,7 +162,7 @@ class CleaningDate(ApplicationModel):
 
         for n, cleaning_date in enumerate(cls.select().where(
                 cls.address == address).order_by(cls.timestamp.desc())):
-            if limit is not None and n > limit:
+            if limit is not None and n >= limit:
                 break
             else:
                 cleanings.append(cleaning_date.to_dict())
