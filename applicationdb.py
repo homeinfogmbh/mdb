@@ -205,3 +205,27 @@ class TenantMessage(ApplicationModel):
         record.created = datetime.now()
         record.save()
         return record
+
+
+class DamageReport(ApplicationModel):
+    """Damage reports"""
+
+    terminal = ForeignKeyField(Terminal, db_column='terminal')
+    message = TextField()
+    name = CharField(255)
+    contact = CharField(255, null=True, default=None)
+    damage_type = CharField(255)
+    timestamp = DateTimeField()
+
+    @classmethod
+    def add(cls, terminal, message, name, damage_type, contact=None):
+        """Creates a new entry for the respective terminal"""
+        record = cls()
+        record.terminal = terminal
+        record.message = message
+        record.name = name
+        record.damage_type = damage_type
+        record.contact = contact
+        record.timestamp = datetime.now()
+        record.save()
+        return record
