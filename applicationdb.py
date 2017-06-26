@@ -242,5 +242,5 @@ class DamageReport(ApplicationModel):
     def from_dict(cls, terminal, dictionary):
         """Creates a new entry from the respective dictionary"""
         return cls.add(
-            dictionary['message'], dictionary['name'],
+            terminal, dictionary['message'], dictionary['name'],
             dictionary['damage_type'], contact=dictionary.get('contact'))
