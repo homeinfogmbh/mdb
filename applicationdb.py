@@ -11,6 +11,14 @@ from homeinfo.terminals.orm import Terminal
 from peeweeplus import MySQLDatabase
 
 
+__all__ = [
+    'Command',
+    'Statistics',
+    'CleaningUser',
+    'CleaningDate',
+    'TenantMessage',
+    'DamageReport']
+
 config = ConfigParserPlus('/etc/applicationdb.conf')
 database = MySQLDatabase(
     config['db']['db'],
@@ -229,3 +237,10 @@ class DamageReport(ApplicationModel):
         record.timestamp = datetime.now()
         record.save()
         return record
+
+    @classmethod
+    def from_dict(cls, terminal, dictionary):
+        """Creates a new entry from the respective dictionary"""
+        return cls.add(
+            dictionary['message'], dictionary['name'],
+            dictionary['damage_type'], contact=dictionary.get('contact'))
