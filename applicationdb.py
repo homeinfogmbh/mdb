@@ -156,22 +156,29 @@ class CleaningDate(ApplicationModel):
         return record
 
     @classmethod
-    def dict_for(cls, address):
+    def of(cls, address, limit=None):
         """Returns a dictionary for the respective address"""
-        dictionary = {}
+        cleanings = []
 
-        for cleaning_date in cls.select().where(cls.address == address):
-            date_time = cleaning_date.timestamp.isoformat()
-            dictionary[date_time] = cleaning_date.user.name
+        for n, cleaning_date in enumerate(cls.select().where(
+                cls.address == address).order_by(cls.timestamp.desc())):
+            if limit is not None and n > limit:
+                break
+            else:
+                cleanings.append(cleaning_date.to_dict())
+
+        return cleanings
+
+    def to_dict(self, verbose=False):
+        """Returns a JSON compliant dictionary"""
+        dictionary = {
+            'user': self.user.to_dict(),
+            'timestamp': self.timestamp.isoformat()}
+
+        if verbose:
+            dictionary['address'] = self.address.to_dict()
 
         return dictionary
-
-    def to_dict(self):
-        """Returns a JSON compliant dictionary"""
-        return {
-            'user': self.user.to_dict(),
-            'timestamp': self.timestamp.isoformat(),
-            'address': self.address.to_dict()}
 
 
 class TenantMessage(ApplicationModel):
