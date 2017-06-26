@@ -172,11 +172,13 @@ class CleaningDate(ApplicationModel):
     def to_dict(self, verbose=False):
         """Returns a JSON compliant dictionary"""
         dictionary = {
-            'user': self.user.to_dict(),
             'timestamp': self.timestamp.isoformat()}
 
         if verbose:
+            dictionary['user'] = self.user.to_dict()
             dictionary['address'] = self.address.to_dict()
+        else:
+            dictionary['user'] = self.user.name
 
         return dictionary
 
