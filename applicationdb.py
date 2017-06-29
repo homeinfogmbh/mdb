@@ -17,7 +17,8 @@ __all__ = [
     'CleaningUser',
     'CleaningDate',
     'TenantMessage',
-    'DamageReport']
+    'DamageReport',
+    'ProxyHost']
 
 config = ConfigParserPlus('/etc/applicationdb.conf')
 database = MySQLDatabase(
@@ -247,3 +248,12 @@ class DamageReport(ApplicationModel):
         return cls.add(
             terminal, dictionary['message'], dictionary['name'],
             dictionary['damage_type'], contact=dictionary.get('contact'))
+
+
+class ProxyHost(ApplicationModel):
+    """Valid proxy hosts"""
+
+    class Meta:
+        db_table = 'proxy_hosts'
+
+    hostname = CharField(255)
