@@ -7,8 +7,6 @@ setup(
     version='latest',
     author='Richard Neumann',
     package_dir={'homeinfo': ''},
-    py_modules=['homeinfo.crm', 'homeinfo.applicationdb'],
-    data_files=[
-        ('/usr/bin',
-         ['files/usr/bin/crmgr'])],
+    py_modules=['homeinfo.crm'],
+    data_files=[('/usr/bin', ['files/usr/bin/crmgr'])],
     description='HOMEINFO Customer Relationship Management ORM')
