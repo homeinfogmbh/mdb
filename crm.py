@@ -444,17 +444,19 @@ class Customer(CRMModel):
         except DoesNotExist:
             customer = cls()
             cls._meta.auto_increment = False
+            force_insert = True
 
             try:
                 customer.id = int(cid)
             except (ValueError, TypeError):
                 cls._meta.auto_increment = True
+                force_insert = False
 
             customer.reseller = reseller
             customer.company = company
             customer.cid = cid
             customer.annotation = annotation
-            customer.save()
+            customer.save(force_insert=force_insert)
             return customer
         else:
             raise AlreadyExists(customer, cid=cid) from None
