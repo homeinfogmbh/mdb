@@ -438,7 +438,7 @@ class Customer(CRMModel):
         return str(self.id)
 
     @classmethod
-    def add(cls, cid, company, reseller=1000, annotation=None):
+    def add(cls, cid, company, reseller=1, annotation=None):
         """Adds a new customer"""
         try:
             customer = cls.get(cls.cid == cid)
