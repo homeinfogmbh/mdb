@@ -38,9 +38,17 @@ class AlreadyExists(Exception):
         self.keys = keys
 
     def __str__(self):
-        return '{} already exists for {}.'.format(
-            self.record.__class__,
-            l2lang(['{}={}'.format(key, self.keys[key]) for key in self.keys]))
+        keys_string = self.keys_string
+
+        if keys_string:
+            return '{} already exists for {}.'.format(
+                self.record.__class__, keys_string)
+        else:
+            return '{} already exists.'.format(self.record.__class__)
+
+    @property
+    def keys_string(self):
+        return l2lang(['{}={}'.format(k, self.keys[k]) for k in self.keys])
 
 
 class CRMModel(Model):
