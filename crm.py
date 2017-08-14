@@ -262,6 +262,10 @@ class Company(CRMModel):
     address = ForeignKeyField(Address, db_column='address', null=True)
     annotation = CharField(256, null=True)
 
+    def __str__(self):
+        """Returns the company's name"""
+        return self.name
+
     @classmethod
     def add(cls, name, address=None, annotation=None):
         """Adds a new company"""
