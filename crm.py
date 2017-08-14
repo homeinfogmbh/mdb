@@ -41,9 +41,9 @@ class AlreadyExists(Exception):
 
         if keys_string:
             return '{} already exists for {}.'.format(
-                self.record.__class__, keys_string)
+                self.record.__class__.__name__, keys_string)
         else:
-            return '{} already exists.'.format(self.record.__class__)
+            return '{} already exists.'.format(self.record.__class__.__name__)
 
     @property
     def keys_string(self):
