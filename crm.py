@@ -7,8 +7,10 @@ from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
 
 from configparserplus import ConfigParserPlus
 from peeweeplus import MySQLDatabase
+from strflib import l2lang
 
 __all__ = [
+    'AlreadyExists',
     'Country',
     'State',
     'Address',
@@ -26,6 +28,19 @@ database = MySQLDatabase(
     user=config['db']['user'],
     passwd=config['db']['passwd'],
     closing=True)
+
+
+class AlreadyExists(Exception):
+    """Indicates that a certainr record already exists"""
+
+    def __init__(self, record, **keys):
+        self.record = record
+        self.keys = keys
+
+    def __str__(self):
+        return '{} already exists for {}.'.format(
+            self.record.__class__,
+            l2lang(['{}={}'.format(key, self.keys[key]) for key in self.keys]))
 
 
 class CRMModel(Model):
@@ -269,12 +284,17 @@ class Company(CRMModel):
     @classmethod
     def add(cls, name, address=None, annotation=None):
         """Adds a new company"""
-        company = cls()
-        company.name = name
-        company.address = address
-        company.annotation = annotation
-        company.save()
-        return company
+        try:
+            company = cls.get(cls.name == name)
+        except DoesNotExist:
+            company = cls()
+            company.name = name
+            company.address = address
+            company.annotation = annotation
+            company.save()
+            return company
+        else:
+            raise AlreadyExists(company, name=name) from None
 
     @classmethod
     def find(cls, id_or_name):
@@ -412,17 +432,22 @@ class Customer(CRMModel):
     @classmethod
     def add(cls, cid, company, reseller=1000, annotation=None):
         """Adds a new customer"""
-        customer = cls()
+        try:
+            customer = cls.get(cls.cid == cid)
+        except DoesNotExist:
+            customer = cls()
 
-        with suppress(ValueError, TypeError):
-            customer.id = int(cid)
+            with suppress(ValueError, TypeError):
+                customer.id = int(cid)
 
-        customer.reseller = reseller
-        customer.company = company
-        customer.cid = cid
-        customer.annotation = annotation
-        customer.save()
-        return customer
+            customer.reseller = reseller
+            customer.company = company
+            customer.cid = cid
+            customer.annotation = annotation
+            customer.save()
+            return customer
+        else:
+            raise AlreadyExists(customer, cid=cid) from None
 
     @classmethod
     def find(cls, key):
