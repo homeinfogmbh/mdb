@@ -1,5 +1,6 @@
 """HOMEINFO's CRM database configuration and models"""
 
+from contextlib import suppress
 from hashlib import sha256
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
@@ -262,6 +263,16 @@ class Company(CRMModel):
     annotation = CharField(256, null=True)
 
     @classmethod
+    def add(cls, name, address=None, annotation=None):
+        """Adds a new company"""
+        company = cls()
+        company.name = name
+        company.address = address
+        company.annotation = annotation
+        company.save()
+        return company
+
+    @classmethod
     def find(cls, id_or_name):
         """Finds companies by primary key or name"""
         try:
@@ -393,6 +404,21 @@ class Customer(CRMModel):
     def __repr__(self):
         """Returns the customer's ID"""
         return str(self.id)
+
+    @classmethod
+    def add(cls, cid, company, reseller=1000, annotation=None):
+        """Adds a new customer"""
+        customer = cls()
+
+        with suppress(ValueError, TypeError):
+            customer.id = int(cid)
+
+        customer.reseller = reseller
+        customer.company = company
+        customer.cid = cid
+        customer.annotation = annotation
+        customer.save()
+        return customer
 
     @classmethod
     def find(cls, key):
