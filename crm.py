@@ -1,6 +1,5 @@
 """HOMEINFO's CRM database configuration and models"""
 
-from contextlib import suppress
 from hashlib import sha256
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
@@ -444,9 +443,12 @@ class Customer(CRMModel):
             customer = cls.get(cls.cid == cid)
         except DoesNotExist:
             customer = cls()
+            cls._meta.auto_increment = False
 
-            with suppress(ValueError, TypeError):
+            try:
                 customer.id = int(cid)
+            except (ValueError, TypeError):
+                cls._meta.auto_increment = True
 
             customer.reseller = reseller
             customer.company = company
