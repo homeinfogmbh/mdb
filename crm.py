@@ -1,6 +1,7 @@
-"""HOMEINFO's CRM database configuration and models"""
+"""HOMEINFO's CRM DATABASE configuration and models."""
 
-from hashlib import sha256
+from contextlib import suppress
+
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
 
@@ -20,12 +21,12 @@ __all__ = [
     'Tenement']
 
 
-config = ConfigParserPlus('/etc/crm.conf')
-database = MySQLDatabase(
-    config['db']['db'],
-    host=config['db']['host'],
-    user=config['db']['user'],
-    passwd=config['db']['passwd'],
+CONFIG = ConfigParserPlus('/etc/crm.conf')
+DATABASE = MySQLDatabase(
+    CONFIG['db']['db'],
+    host=CONFIG['db']['host'],
+    user=CONFIG['db']['user'],
+    passwd=CONFIG['db']['passwd'],
     closing=True)
 
 
@@ -33,28 +34,33 @@ class AlreadyExists(Exception):
     """Indicates that a certainr record already exists"""
 
     def __init__(self, record, **keys):
+        """Sets the record and key."""
+        super().__init__((record, keys))
         self.record = record
         self.keys = keys
 
     def __str__(self):
+        """Prints record and keys."""
         keys_string = self.keys_string
 
         if keys_string:
             return '{} already exists for {}.'.format(
                 self.record.__class__.__name__, keys_string)
-        else:
-            return '{} already exists.'.format(self.record.__class__.__name__)
+
+        return '{} already exists.'.format(self.record.__class__.__name__)
 
     @property
     def keys_string(self):
-        return l2lang(['{}={}'.format(k, self.keys[k]) for k in self.keys])
+        """Returns the keys string."""
+        return l2lang([
+            '{}={}'.format(key, value) for key, value in self.keys.items()])
 
 
 class CRMModel(Model):
     """Generic HOMEINFO CRM Model"""
 
     class Meta:
-        database = database
+        database = DATABASE
         schema = database.database
 
     id = PrimaryKeyField()
@@ -72,6 +78,19 @@ class Country(CRMModel):
         """Converts the country to a string"""
         return self.name
 
+    @classmethod
+    def find(cls, pattern):
+        """Finds countries by patterns."""
+        pattern = pattern.lower()
+
+        for country in cls:
+            if pattern in country.iso.lower():
+                yield country
+            elif pattern in country.name.lower():
+                yield country
+            elif pattern in country.original_name.lower():
+                yield country
+
     @property
     def iso(self):
         """Returns the ISO code"""
@@ -80,7 +99,7 @@ class Country(CRMModel):
     @iso.setter
     def iso(self, iso):
         """Sets the ISO code"""
-        if len(iso) is 2:
+        if len(iso) == 2:
             self._iso = iso
         else:
             raise ValueError('ISO code must be exactly two characters long')
@@ -106,6 +125,25 @@ class State(CRMModel):
     # An *exactly* two characters long ISO 3166-2 state code
     _iso = CharField(2, db_column='iso')
     name = CharField(64)
+
+    @classmethod
+    def find(cls, pattern):
+        """Finds a state by the provided pattern."""
+        try:
+            country = int(pattern)
+        except ValueError:
+            if len(pattern) == 2:
+                for state in cls.select().where(cls._iso == pattern):
+                    yield state
+            else:
+                pattern = pattern.lower()
+
+                for state in cls:
+                    if pattern in state.name.lower():
+                        yield state
+        else:
+            for state in cls.select().where(cls.country == country):
+                yield state
 
     @property
     def iso(self):
@@ -147,10 +185,9 @@ class Address(CRMModel):
         """Converts the Address to a one-line string"""
         if self.po_box:
             return '{} {}'.format(self.po_box, self.city)
-        else:
-            return '{} {}, {} {}'.format(
-                self.street, self.house_number,
-                self.zip_code, self.city)
+
+        return '{} {}, {} {}'.format(
+            self.street, self.house_number, self.zip_code, self.city)
 
     def __str__(self):
         """Converts the Address to a string"""
@@ -178,8 +215,74 @@ class Address(CRMModel):
         return result
 
     @classmethod
+    def add_by_address(cls, address, state=None):
+        """Adds a new address by a complete address."""
+        street, house_number, zip_code, city = address
+
+        if state is None:
+            try:
+                return Address.get(
+                    (Address.city == city) &
+                    (Address.street == street) &
+                    (Address.house_number == house_number) &
+                    (Address.zip_code == zip_code))
+            except DoesNotExist:
+                address = Address()
+                address.city = city
+                address.street = street
+                address.house_number = house_number
+                address.zip_code = zip_code
+                address.save()
+                return address
+        else:
+            try:
+                return Address.get(
+                    (Address.city == city) &
+                    (Address.street == street) &
+                    (Address.house_number == house_number) &
+                    (Address.zip_code == zip_code) &
+                    (Address.state == state))
+            except DoesNotExist:
+                address = Address()
+                address.city = city
+                address.street = street
+                address.house_number = house_number
+                address.zip_code = zip_code
+                address.state = state
+                address.save()
+                return address
+
+    @classmethod
+    def add_by_po_box(cls, po_box, city, state=None):
+        """Adds an address by a PO box."""
+        if state is None:
+            try:
+                return Address.get(
+                    (Address.po_box == po_box) &
+                    (Address.city == city))
+            except DoesNotExist:
+                address = Address()
+                address.po_box = po_box
+                address.city = city
+                address.save()
+                return address
+        else:
+            try:
+                return Address.get(
+                    (Address.po_box == po_box) &
+                    (Address.city == city) &
+                    (Address.state == state))
+            except DoesNotExist:
+                address = Address()
+                address.po_box = po_box
+                address.city = city
+                address.state = state
+                address.save()
+                return address
+
+    @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
-        """Adds an address record to the database
+        """Adds an address record to the DATABASE
         Usage:
             * Add address with either po_box or addr parameter
             * addr must be a tuple: (<street>, <house_number>, <zip_code>)
@@ -196,61 +299,42 @@ class Address(CRMModel):
             except ValueError:
                 raise ValueError(
                     'addr must be (street, house_number, zip_code)')
-
-            if state is None:
-                try:
-                    return Address.get(
-                        (Address.city == city) &
-                        (Address.street == street) &
-                        (Address.house_number == house_number) &
-                        (Address.zip_code == zip_code))
-                except DoesNotExist:
-                    address = Address()
-                    address.city = city
-                    address.street = street
-                    address.house_number = house_number
-                    address.zip_code = zip_code
-                    address.save()
-                    return address
             else:
-                try:
-                    return Address.get(
-                        (Address.city == city) &
-                        (Address.street == street) &
-                        (Address.house_number == house_number) &
-                        (Address.zip_code == zip_code) &
-                        (Address.state == state))
-                except DoesNotExist:
-                    address = Address()
-                    address.city = city
-                    address.street = street
-                    address.house_number = house_number
-                    address.zip_code = zip_code
-                    address.state = state
-                    address.save()
-                    return address
+                address = (street, house_number, zip_code, city)
+                return cls.add_by_address(address, state=state)
         elif po_box is not None:
-            if state is None:
-                try:
-                    return Address.get(Address.po_box == po_box)
-                except DoesNotExist:
-                    address = Address()
-                    address.po_box = po_box
-                    address.save()
-                    return address
-            else:
-                try:
-                    return Address.get(
-                        (Address.po_box == po_box) &
-                        (Address.state == state))
-                except DoesNotExist:
-                    address = Address()
-                    address.po_box = po_box
-                    address.state = state
-                    address.save()
-                    return address
+            return cls.add_by_po_box(po_box, city, state=state)
         else:
             raise po_box_addr_xor_err
+
+    @classmethod
+    def find(cls, pattern):
+        """Finds an address."""
+        pattern = pattern.lower()
+
+        for address in cls:
+            if address.street is not None:
+                if pattern in address.street.lower():
+                    yield address
+                    continue
+
+            if address.house_number is not None:
+                if pattern in address.house_number.lower():
+                    yield address
+                    continue
+
+            if address.zip_code is not None:
+                if pattern in address.zip_code.lower():
+                    yield address
+                    continue
+
+            if address.po_box is not None:
+                if pattern in address.po_box.lower():
+                    yield address
+                    continue
+
+            if pattern in address.city.lower():
+                yield address
 
     def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary"""
@@ -304,14 +388,19 @@ class Company(CRMModel):
             raise AlreadyExists(company, name=name) from None
 
     @classmethod
-    def find(cls, id_or_name):
+    def find(cls, pattern):
         """Finds companies by primary key or name"""
         try:
-            ident = int(id_or_name)
+            ident = int(pattern)
         except ValueError:
-            return cls.get(cls.name == id_or_name)
+            pattern = pattern.lower()
+
+            for company in cls:
+                if pattern in company.name.lower():
+                    yield company
         else:
-            return cls.get(cls.id == ident)
+            with suppress(DoesNotExist):
+                yield cls.get(cls.id == ident)
 
     @property
     def departments(self):
@@ -350,6 +439,18 @@ class Department(CRMModel):
     name = CharField(64)
     type = CharField(64, null=True)
 
+    @classmethod
+    def find(cls, pattern):
+        """Finds a department."""
+        pattern = pattern.lower()
+
+        for department in cls:
+            if pattern in department.name.lower():
+                yield department
+            elif department.type is not None:
+                if pattern in department.type.lower():
+                    yield department
+
     def to_dict(self):
         """Returns a JSON-like dictionary"""
         dictionary = {'name': self.name}
@@ -378,12 +479,23 @@ class Employee(CRMModel):
     fax = CharField(32, null=True)
     address = ForeignKeyField(Address, db_column='address', null=True)
 
+    @classmethod
+    def find(cls, pattern):
+        """Finds an employee."""
+        pattern = pattern.lower()
+
+        for employee in cls:
+            if pattern in employee.surname.lower():
+                yield employee
+            elif pattern in employee.first_name.lower():
+                yield employee
+
     def __str__(self):
         """Returns the employee's name"""
         if self.first_name is not None:
             return ' '.join([self.first_name, self.surname])
-        else:
-            return self.surname
+
+        return self.surname
 
     def to_dict(self):
         """Returns a JSON-like dictionary"""
@@ -421,11 +533,8 @@ class Employee(CRMModel):
 class Customer(CRMModel):
     """CRM's customer(s)"""
 
-    reseller = ForeignKeyField(Company, db_column='reseller')
     company = ForeignKeyField(
         Company, db_column='company', related_name='customers')
-    # Customer ID assigned by reseller to customer
-    cid = CharField(255)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
@@ -437,73 +546,50 @@ class Customer(CRMModel):
         return str(self.id)
 
     @classmethod
-    def add(cls, cid, company, reseller=1, annotation=None):
+    def add(cls, cid, company, annotation=None):
         """Adds a new customer"""
+        customer = cls()
+        cls._meta.auto_increment = False
+
         try:
-            customer = cls.get(cls.cid == cid)
-        except DoesNotExist:
-            customer = cls()
-            cls._meta.auto_increment = False
+            customer.id = int(cid)
+        except (ValueError, TypeError):
+            cls._meta.auto_increment = True
+            force_insert = False
+        else:
             force_insert = True
 
-            try:
-                customer.id = int(cid)
-            except (ValueError, TypeError):
-                cls._meta.auto_increment = True
-                force_insert = False
-
-            customer.reseller = reseller
-            customer.company = company
-            customer.cid = cid
-            customer.annotation = annotation
-            customer.save(force_insert=force_insert)
-            return customer
-        else:
-            raise AlreadyExists(customer, cid=cid) from None
+        customer.company = company
+        customer.annotation = annotation
+        customer.save(force_insert=force_insert)
+        return customer
 
     @classmethod
-    def find(cls, key):
-        """Finds customers by primary key or company name"""
+    def find(cls, pattern):
+        """Finds a customer by the provided pattern."""
         try:
-            ident = int(key)
+            cid = int(pattern)
         except ValueError:
-            try:
-                return cls.get(cls.cid == key)
-            except DoesNotExist:
-                return cls.get(cls.company == Company.find(key))
-        else:
-            return cls.get(cls.id == ident)
+            pattern = pattern.lower()
 
-    @property
-    def sha256name(self):
-        """Returns the SHA-256 encoded CID"""
-        return sha256(self.cid.encode()).hexdigest()
+            for customer in Customer:
+                if pattern in customer.name.lower():
+                    yield customer
+        else:
+            with suppress(DoesNotExist):
+                yield Customer.get(Customer.id == cid)
 
     @property
     def name(self):
-        """Returns the customer's name"""
-        return str(self.company.name) if self.company else ''
+        """Returns the customer's name."""
+        return self.company.name
 
-    @property
-    def resales(self):
-        """Yields customers this customer resells"""
-        return self.company.resales
-
-    def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary"""
-        dictionary = {'cid': self.cid}
-
-        if cascade:
-            dictionary['reseller'] = self.reseller.to_dict(cascade=cascade)
-            dictionary['company'] = self.company.to_dict(cascade=cascade)
-        else:
-            dictionary['reseller'] = self.reseller.id
-            dictionary['company'] = self.company.id
-
-        if self.annotation is not None:
-            dictionary['annotation'] = self.annotation
-
-        return dictionary
+    def to_dict(self):
+        """Returns a JSON-like dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'annotation': self.annotation}
 
 
 class Tenement(CRMModel):
@@ -527,7 +613,7 @@ class Tenement(CRMModel):
             return tenement
 
     @classmethod
-    def of(cls, customer):
+    def by_customer(cls, customer):
         """Yields tenements of the respective customer"""
         return cls.select().where(cls.customer == customer)
 

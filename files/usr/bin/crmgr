@@ -4,13 +4,7 @@
 CRM database manager
 
 Usage:
-    crmgr find country <pattern> [options]
-    crmgr find state <pattern> [options]
-    crmgr find address <pattern> [options]
-    crmgr find company <pattern> [options]
-    crmgr find department <pattern> [options]
-    crmgr find employee <pattern> [options]
-    crmgr find customer <pattern> [options]
+    crmgr find <pattern> [options]
     crmgr add country <iso> <name> [--original-name=<name>]
     crmgr add state <country> <iso> <name>
     crmgr add address <street> <house_number> <zip_code> <city> \
@@ -24,121 +18,68 @@ Usage:
     crmgr add customer <company> [--annotation=<annotation>]
 
 Options:
-    --help      Prints this page.
-    --str       Prints string representation of search target instead of ID.
+    --customer, -C      Find customers.
+    --company, -O       Find companies.
+    --department, -D    Find departments.
+    --employee, -E      Find employees.
+    --address, -A       Find addresses.
+    --country, -N       Find countries.
+    --state, -S         Find states.
+    --name, -n          Prints name of search target instead of ID.
+    --help , -h         Prints this page.
 """
-from sys import stderr
+from sys import stdout, stderr, exit as exit_
 
-from peewee import DoesNotExist
-
-from homeinfo.crm import Country, State, Address, Company, Customer
-
-__all__ = [
-    'error',
-    'PrintMode',
-    'find',
-    'mprint']
+from homeinfo.crm import Country, State, Address, Company, Department, \
+    Employee, Customer
 
 
-def error(*args, **kwargs):
-    """Prints errors to stderr"""
+def find(options):
+    """Find model matching pattern."""
 
-    print(*args, file=stderr, **kwargs)
+    pattern = options['<pattern>']
+
+    if options['--customer']:
+        yield from Customer.find(pattern)
+
+    if options['--company']:
+        yield from Company.find(pattern)
+
+    if options['--department']:
+        yield from Department.find(pattern)
+
+    if options['--employee']:
+        yield from Employee.find(pattern)
+
+    if options['--address']:
+        yield from Address.find(pattern)
+
+    if options['--country']:
+        yield from Country.find(pattern)
+
+    if options['--state']:
+        yield from State.find(pattern)
 
 
-def find(model, pattern):
-    """Find model matching pattern"""
+def print_model(model, print_name):
+    """Prints the respective model instance."""
 
-    if model is Country:
-        for country in model:
-            if (pattern in country.iso.lower() or
-                    pattern in country.name.lower() or
-                    pattern in country.original_name.lower()):
-                yield country
-    elif model is State:
-        try:
-            country = int(pattern)
-        except ValueError:
-            country = None
+    print(model.id, file=stderr if print_name else stdout, flush=True)
+    print(str(model), file=stdout if print_name else stderr, flush=True)
 
-        if country is None:
-            if len(pattern == 2):
-                for state in model:
-                    if state.iso == pattern:
-                        yield state
-            else:
-                for state in model:
-                    if state.name.lower() == pattern:
-                        yield state
-        else:
-            for state in model.select().where(model.country == country):
-                yield state
-    elif model is Customer:
-        try:
-            cid = int(pattern)
-        except ValueError:
-            cid = None
 
-        if cid is None:
-            for customer in Customer:
-                if pattern in customer.name.lower():
-                    yield (PrintMode.ID, customer)
-        else:
-            try:
-                customer = Customer.get(Customer.id == cid)
-            except DoesNotExist:
-                error('No customer for CID', cid)
-            else:
-                yield (PrintMode.STR, customer)
+def main(options):
+    """Runs the crmgr."""
+
+    if options['find']:
+        for model in find(options):
+            print_model(model, options['--name'])
     else:
-        raise NotImplementedError()
-
-
-def mprint(model, mode):
-    """Prints the respective model instance"""
-
-    if mode is PrintMode.ID:
-        print(model.id)
-    elif mode is PrintMode.STR:
-        print(str(model))
-    elif mode is PrintMode.REPR:
-        print(repr(model))
-    else:
-        raise ValueError('Invalid model printing mode: {}'.format(mode))
-
-
-class PrintMode():
-    """Model printing modes"""
-
-    ID = 'id'
-    STR = 'str'
-    REPR = 'repr'
+        print('Operation currently not implemented.', file=stderr, flush=True)
+        exit_(3)
 
 
 if __name__ == '__main__':
     from docopt import docopt
 
-    options = docopt(__doc__)
-
-    mode = PrintMode.STR if options['--str'] else PrintMode.ID
-
-    if options['find']:
-        pattern = options['<pattern>']
-        pattern_lower = pattern.lower()
-
-        if options['country']:
-            for country in find(Country, pattern_lower):
-                mprint(country, mode)
-        elif options['state']:
-            for state in find(State, pattern_lower):
-                mprint(state, mode)
-        elif options['customer']:
-            for mode_, customer in find(Customer, pattern_lower):
-                if mode is PrintMode.ID:
-                    mprint(customer, mode_)
-                else:
-                    mprint(customer, mode)
-        else:
-            raise NotImplementedError()
-    else:
-        raise NotImplementedError()
+    main(docopt(__doc__))
