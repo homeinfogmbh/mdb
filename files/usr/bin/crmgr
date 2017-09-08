@@ -8,25 +8,27 @@ Usage:
     crmgr add country <iso> <name> [--original-name=<name>]
     crmgr add state <country> <iso> <name>
     crmgr add address <street> <house_number> <zip_code> <city> \
-[--state=<state>]
-    crmgr add po-box <po_box> <city> [--state=<state>]
-    crmgr add company <name> [--address=<address>] [--annotation=<annotation>]
+[--state-id=<state>]
+    crmgr add po-box <po_box> <city> [--state-id=<state>]
+    crmgr add company <name> [--address-id=<address>] [--annotation=<annotation>]
     crmgr add department <name> [--type=<type>]
     crmgr add employee <company> <department> <surname> <phone> \
 [--fist-name=<name>] [--cellphone=<cellphone>] [--email=<email>] \
-[--alt-phone=<phone>] [--fax=<fax>] [--address=<address>]
+[--alt-phone=<phone>] [--fax=<fax>] [--address-id=<address>]
     crmgr add customer <company> [--annotation=<annotation>]
 
 Options:
-    --customer, -C      Find customers.
-    --company, -O       Find companies.
-    --department, -D    Find departments.
-    --employee, -E      Find employees.
-    --address, -A       Find addresses.
-    --country, -N       Find countries.
-    --state, -S         Find states.
-    --name, -n          Prints name of search target instead of ID.
-    --help , -h         Prints this page.
+    --customer, -C          Find customers.
+    --company, -O           Find companies.
+    --department, -D        Find departments.
+    --employee, -E          Find employees.
+    --address, -A           Find addresses.
+    --country, -N           Find countries.
+    --state, -S             Find states.
+    --name, -n              Prints name of search target instead of ID.
+    --state-id=<state>      Specifies the state ID to set.
+    --address-id=<address>  Specifies the address ID to set.
+    --help , -h             Prints this page.
 """
 from sys import stdout, stderr, exit as exit_
 
