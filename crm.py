@@ -5,7 +5,7 @@ from contextlib import suppress
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
 
-from configparserplus import ConfigParserPlus
+from configlib import INIParser
 from peeweeplus import MySQLDatabase
 from strflib import l2lang
 
@@ -21,7 +21,7 @@ __all__ = [
     'Tenement']
 
 
-CONFIG = ConfigParserPlus('/etc/crm.conf')
+CONFIG = INIParser('/etc/crm.conf')
 DATABASE = MySQLDatabase(
     CONFIG['db']['db'],
     host=CONFIG['db']['host'],
