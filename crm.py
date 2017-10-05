@@ -67,15 +67,15 @@ class CRMModel(Model):
 
 
 class Country(CRMModel):
-    """Country data"""
+    """Countries."""
 
-    # An *exactly* two characters long ISO 3166-2 state code
-    _iso = CharField(2, db_column='iso')
+    # An *exactly* two characters long ISO 3166-2 country code
+    iso = CharField(2)
     name = CharField(64)
     original_name = CharField(64, null=True, default=None)
 
     def __str__(self):
-        """Converts the country to a string"""
+        """Converts the country to a string."""
         return self.name
 
     @classmethod
@@ -91,21 +91,8 @@ class Country(CRMModel):
             elif pattern in country.original_name.lower():
                 yield country
 
-    @property
-    def iso(self):
-        """Returns the ISO code"""
-        return self._iso
-
-    @iso.setter
-    def iso(self, iso):
-        """Sets the ISO code"""
-        if len(iso) == 2:
-            self._iso = iso
-        else:
-            raise ValueError('ISO code must be exactly two characters long')
-
     def to_dict(self):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         dictionary = {
             'iso': self.iso,
             'name': self.name}
@@ -117,13 +104,12 @@ class Country(CRMModel):
 
 
 class State(CRMModel):
-    """Country data"""
+    """States."""
 
     country = ForeignKeyField(
-        Country, db_column='country',
-        related_name='states')
+        Country, db_column='country', related_name='states')
     # An *exactly* two characters long ISO 3166-2 state code
-    _iso = CharField(2, db_column='iso')
+    iso = CharField(2)
     name = CharField(64)
 
     @classmethod
@@ -133,7 +119,7 @@ class State(CRMModel):
             country = int(pattern)
         except ValueError:
             if len(pattern) == 2:
-                for state in cls.select().where(cls._iso == pattern):
+                for state in cls.select().where(cls.iso == pattern):
                     yield state
             else:
                 pattern = pattern.lower()
@@ -144,19 +130,6 @@ class State(CRMModel):
         else:
             for state in cls.select().where(cls.country == country):
                 yield state
-
-    @property
-    def iso(self):
-        """Returns the ISO code"""
-        return self._iso
-
-    @iso.setter
-    def iso(self, iso):
-        """Sets the ISO code"""
-        if len(iso) == 2:
-            self._iso = iso
-        else:
-            raise ValueError('ISO code must be exactly two characters long')
 
     @property
     def iso3166(self):
