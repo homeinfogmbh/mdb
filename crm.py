@@ -385,11 +385,6 @@ class Company(CRMModel):
 
         return departments
 
-    @property
-    def resales(self):
-        """Yields customers this customer resells"""
-        return Customer.select().where(Customer.reseller == self)
-
     def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary"""
         dictionary = {'name': self.name}
