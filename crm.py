@@ -1,6 +1,4 @@
-"""HOMEINFO's CRM DATABASE configuration and models."""
-
-from contextlib import suppress
+"""HOMEINFO's CRM database."""
 
 from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
     DoesNotExist
@@ -31,7 +29,7 @@ DATABASE = MySQLDatabase(
 
 
 class AlreadyExists(Exception):
-    """Indicates that a certainr record already exists"""
+    """Indicates that a certainr record already exists."""
 
     def __init__(self, record, **keys):
         """Sets the record and key."""
@@ -57,9 +55,10 @@ class AlreadyExists(Exception):
 
 
 class CRMModel(Model):
-    """Generic HOMEINFO CRM Model"""
+    """Generic HOMEINFO CRM Model."""
 
     class Meta:
+        """Database and schema configuration."""
         database = DATABASE
         schema = database.database
 
@@ -104,11 +103,11 @@ class Country(CRMModel):
 
 
 class State(CRMModel):
-    """States."""
+    """States within countries."""
 
     country = ForeignKeyField(
         Country, db_column='country', related_name='states')
-    # An *exactly* two characters long ISO 3166-2 state code
+    # An *exactly* two characters long ISO 3166-2 state code.
     iso = CharField(2)
     name = CharField(64)
 
@@ -133,11 +132,11 @@ class State(CRMModel):
 
     @property
     def iso3166(self):
-        """Returns the full ISO 3166-2 compliant code"""
+        """Returns the full ISO 3166-2 compliant code."""
         return '{}-{}'.format(self.country.iso, self.iso)
 
     def to_dict(self):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         return {
             'country': self.country.id,
             'iso': self.iso,
@@ -145,7 +144,7 @@ class State(CRMModel):
 
 
 class Address(CRMModel):
-    """Address data"""
+    """Address data."""
 
     street = CharField(64, null=True)
     house_number = CharField(8, null=True)
@@ -155,7 +154,7 @@ class Address(CRMModel):
     state = ForeignKeyField(State, db_column='state', null=True)
 
     def __repr__(self):
-        """Converts the Address to a one-line string"""
+        """Converts the Address to a one-line string."""
         if self.po_box:
             return '{} {}'.format(self.po_box, self.city)
 
@@ -163,7 +162,7 @@ class Address(CRMModel):
             self.street, self.house_number, self.zip_code, self.city)
 
     def __str__(self):
-        """Converts the Address to a string"""
+        """Converts the Address to a string."""
         result = ''
 
         if self.po_box:
@@ -255,10 +254,11 @@ class Address(CRMModel):
 
     @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
-        """Adds an address record to the DATABASE
+        """Adds an address record to the database.
+
         Usage:
-            * Add address with either po_box or addr parameter
-            * addr must be a tuple: (<street>, <house_number>, <zip_code>)
+            * Add address with either po_box or addr parameter.
+            * addr must be a tuple: (<street>, <house_number>, <zip_code>).
         """
         po_box_addr_xor_err = ValueError('Must specify either po_box or addr')
 
@@ -310,7 +310,7 @@ class Address(CRMModel):
                 yield address
 
     def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         dictionary = {'city': self.city}
 
         if self.street is not None:
@@ -335,49 +335,44 @@ class Address(CRMModel):
 
 
 class Company(CRMModel):
-    """A company"""
+    """Represents companies HOMEINFO has relations to."""
 
-    name = CharField(64)
+    name = CharField(255)
+    abbreviation = CharField(16, null=True, default=None)
     address = ForeignKeyField(Address, db_column='address', null=True)
     annotation = CharField(256, null=True)
 
     def __str__(self):
-        """Returns the company's name"""
+        """Returns the company's name."""
         return self.name
 
     @classmethod
-    def add(cls, name, address=None, annotation=None):
-        """Adds a new company"""
+    def add(cls, name, abbreviation=None, address=None, annotation=None):
+        """Adds a new company."""
         try:
             company = cls.get(cls.name == name)
         except DoesNotExist:
             company = cls()
             company.name = name
+            company.abbreviation = abbreviation
             company.address = address
             company.annotation = annotation
             company.save()
             return company
-        else:
-            raise AlreadyExists(company, name=name) from None
+
+        raise AlreadyExists(company, name=name)
 
     @classmethod
     def find(cls, pattern):
-        """Finds companies by primary key or name"""
-        try:
-            ident = int(pattern)
-        except ValueError:
-            pattern = pattern.lower()
-
-            for company in cls:
-                if pattern in company.name.lower():
-                    yield company
-        else:
-            with suppress(DoesNotExist):
-                yield cls.get(cls.id == ident)
+        """Finds companies by primary key or name."""
+        return cls.select().where(
+            (cls.name ** '%{}%'.format(pattern))
+            | (cls.abbreviation ** pattern)
+            | (cls.annotation ** '%{}%'.format(pattern)))
 
     @property
     def departments(self):
-        """Returns the company's departments"""
+        """Returns the company's departments."""
         departments = set()
 
         for employee in self.employees:
@@ -386,7 +381,7 @@ class Company(CRMModel):
         return departments
 
     def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         dictionary = {'name': self.name}
 
         if self.address is not None:
@@ -402,7 +397,7 @@ class Company(CRMModel):
 
 
 class Department(CRMModel):
-    """Departments of companies"""
+    """Departments of companies."""
 
     name = CharField(64)
     type = CharField(64, null=True)
@@ -420,7 +415,7 @@ class Department(CRMModel):
                     yield department
 
     def to_dict(self):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         dictionary = {'name': self.name}
 
         if self.type is not None:
@@ -430,7 +425,7 @@ class Department(CRMModel):
 
 
 class Employee(CRMModel):
-    """Employees"""
+    """Employees."""
 
     company = ForeignKeyField(
         Company, db_column='company',
@@ -459,14 +454,14 @@ class Employee(CRMModel):
                 yield employee
 
     def __str__(self):
-        """Returns the employee's name"""
+        """Returns the employee's name."""
         if self.first_name is not None:
             return ' '.join([self.first_name, self.surname])
 
         return self.surname
 
     def to_dict(self):
-        """Returns a JSON-like dictionary"""
+        """Returns a JSON-like dictionary."""
         dictionary = {
             'surname': self.surname,
             'phone': self.phone}
@@ -499,76 +494,83 @@ class Employee(CRMModel):
 
 
 class Customer(CRMModel):
-    """CRM's customer(s)"""
+    """CRM's customer(s)."""
 
-    company = ForeignKeyField(
-        Company, db_column='company', related_name='customers')
+    cid = CharField(255)
+    company = ForeignKeyField(Company, db_column='company')
+    reseller = ForeignKeyField('self', db_column='reseller', null=True)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
-        """Returns the customer's full name"""
-        return self.name
+        """Returns the customer's full name."""
+        return self.cid
 
     def __repr__(self):
-        """Returns the customer's ID"""
+        """Returns the customer's ID."""
         return str(self.id)
 
     @classmethod
-    def add(cls, cid, company, annotation=None):
-        """Adds a new customer"""
+    def add(cls, cid, company, reseller=None, annotation=None):
+        """Adds a new customer."""
         customer = cls()
-        cls._meta.auto_increment = False
-
-        try:
-            customer.id = int(cid)
-        except (ValueError, TypeError):
-            cls._meta.auto_increment = True
-            force_insert = False
-        else:
-            force_insert = True
-
+        customer.cid = str(cid)
         customer.company = company
+        customer.reseller = reseller
         customer.annotation = annotation
-        customer.save(force_insert=force_insert)
+        customer.save()
         return customer
 
     @classmethod
     def find(cls, pattern):
         """Finds a customer by the provided pattern."""
-        try:
-            cid = int(pattern)
-        except ValueError:
-            pattern = pattern.lower()
+        return cls.select().join(Company).where(
+            (cls.cid == pattern) | (Company.abbreviation ** pattern)
+            | (Company.name ** '%{}%'.format(pattern)))
 
-            for customer in Customer:
-                if pattern in customer.name.lower():
-                    yield customer
-        else:
-            with suppress(DoesNotExist):
-                yield Customer.get(Customer.id == cid)
+    @classmethod
+    def by_reseller(cls, reseller):
+        """Yields customers by reseller."""
+        if reseller is None:
+            return cls.select().where(cls.reseller >> None)
+
+        return cls.select().where(cls.reseller == reseller)
 
     @property
     def name(self):
         """Returns the customer's name."""
         return self.company.name
 
-    def to_dict(self):
+    @property
+    def reselling_chain(self):
+        """Returns the reselling chain."""
+        yield self
+        reseller = self
+
+        for reseller in iter(lambda: reseller.reseller, None):
+            yield reseller
+
+    def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary."""
-        return {
-            'id': self.id,
-            'name': self.name,
-            'annotation': self.annotation}
+        dictionary = {'cid': self.cid, 'annotation': self.annotation}
+
+        if cascade:
+            dictionary['company'] = self.company.to_dict()
+
+            if self.reseller is not None:
+                dictionary['reseller'] = self.reseller.to_dict()
+
+        return dictionary
 
 
 class Tenement(CRMModel):
-    """Stores tenements of the respective customers"""
+    """Stores tenements of the respective customers."""
 
     customer = ForeignKeyField(Customer, db_column='customer')
     address = ForeignKeyField(Address, db_column='address')
 
     @classmethod
     def add(cls, customer, address):
-        """Adds a new tenement"""
+        """Adds a new tenement."""
         try:
             return cls.get(
                 (cls.customer == customer) &
@@ -582,9 +584,9 @@ class Tenement(CRMModel):
 
     @classmethod
     def by_customer(cls, customer):
-        """Yields tenements of the respective customer"""
+        """Yields tenements of the respective customer."""
         return cls.select().where(cls.customer == customer)
 
     def to_dict(self):
-        """Returns the tenement as a dictionary"""
+        """Returns the tenement as a dictionary."""
         return self.address.to_dict()
