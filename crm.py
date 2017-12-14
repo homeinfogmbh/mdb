@@ -21,11 +21,8 @@ __all__ = [
 
 CONFIG = INIParser('/etc/crm.conf')
 DATABASE = MySQLDatabase(
-    CONFIG['db']['db'],
-    host=CONFIG['db']['host'],
-    user=CONFIG['db']['user'],
-    passwd=CONFIG['db']['passwd'],
-    closing=True)
+    CONFIG['db']['db'], host=CONFIG['db']['host'], user=CONFIG['db']['user'],
+    passwd=CONFIG['db']['passwd'], closing=True)
 
 
 class AlreadyExists(Exception):
@@ -555,9 +552,7 @@ class Customer(CRMModel):
 
         if cascade:
             dictionary['company'] = self.company.to_dict()
-
-            if self.reseller is not None:
-                dictionary['reseller'] = self.reseller.to_dict()
+            dictionary['reseller'] = self.reseller and self.reseller.to_dict()
 
         return dictionary
 
