@@ -497,7 +497,7 @@ class Customer(CRMModel):
     """CRM's customer(s)."""
 
     cid = CharField(255)
-    company = ForeignKeyField(Company, db_column='company')
+    company = ForeignKeyField(Company, db_column='company', null=True)
     reseller = ForeignKeyField('self', db_column='reseller', null=True)
     annotation = CharField(255, null=True, default=None)
 
@@ -510,7 +510,7 @@ class Customer(CRMModel):
         return str(self.id)
 
     @classmethod
-    def add(cls, cid, company, reseller=None, annotation=None):
+    def add(cls, cid, company=None, reseller=None, annotation=None):
         """Adds a new customer."""
         customer = cls()
         customer.cid = str(cid)
