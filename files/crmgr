@@ -68,7 +68,7 @@ def print_model(model, print_name):
     """Prints the respective model instance."""
 
     if isinstance(model, Customer):
-        ident = model.cid
+        ident = '/'.join(model.reselling_chain)
         name = model.name
     else:
         ident = model.id
