@@ -67,8 +67,15 @@ def find(options):
 def print_model(model, print_name):
     """Prints the respective model instance."""
 
-    print(model.id, file=stderr if print_name else stdout, flush=True)
-    print(str(model), file=stdout if print_name else stderr, flush=True)
+    if isinstance(model, Customer):
+        ident = model.cid
+        name = model.name
+    else:
+        ident = model.id
+        name = str(model)
+
+    print(ident, file=stderr if print_name else stdout, flush=True)
+    print(name, file=stdout if print_name else stderr, flush=True)
 
 
 def main(options):
