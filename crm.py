@@ -61,6 +61,10 @@ class CRMModel(Model):
 
     id = PrimaryKeyField()
 
+    def __repr__(self):
+        """Returns the model's ID as per default."""
+        return str(self.id)
+
 
 class Country(CRMModel):
     """Countries."""
@@ -73,6 +77,10 @@ class Country(CRMModel):
     def __str__(self):
         """Converts the country to a string."""
         return self.name
+
+    def __repr__(self):
+        """Returns the ISO code."""
+        return self.iso
 
     @classmethod
     def find(cls, pattern):
@@ -107,6 +115,14 @@ class State(CRMModel):
     # An *exactly* two characters long ISO 3166-2 state code.
     iso = CharField(2)
     name = CharField(64)
+
+    def __str__(self):
+        """Returns the country's name."""
+        return self.name
+
+    def __repr__(self):
+        """Returns the ISO code."""
+        return self.iso
 
     @classmethod
     def find(cls, pattern):
@@ -399,6 +415,10 @@ class Department(CRMModel):
     name = CharField(64)
     type = CharField(64, null=True)
 
+    def __str__(self):
+        """Returns the department's name."""
+        return self.name
+
     @classmethod
     def find(cls, pattern):
         """Finds a department."""
@@ -439,6 +459,13 @@ class Employee(CRMModel):
     fax = CharField(32, null=True)
     address = ForeignKeyField(Address, db_column='address', null=True)
 
+    def __str__(self):
+        """Returns the employee's name."""
+        if self.first_name is not None:
+            return ' '.join([self.first_name, self.surname])
+
+        return self.surname
+
     @classmethod
     def find(cls, pattern):
         """Finds an employee."""
@@ -449,13 +476,6 @@ class Employee(CRMModel):
                 yield employee
             elif pattern in employee.first_name.lower():
                 yield employee
-
-    def __str__(self):
-        """Returns the employee's name."""
-        if self.first_name is not None:
-            return ' '.join([self.first_name, self.surname])
-
-        return self.surname
 
     def to_dict(self):
         """Returns a JSON-like dictionary."""
@@ -500,11 +520,11 @@ class Customer(CRMModel):
 
     def __str__(self):
         """Returns the customer's full name."""
-        return self.cid
+        return self.name
 
     def __repr__(self):
         """Returns the customer's ID."""
-        return str(self.id)
+        return ':'.join(customer.cid for customer in self.reselling_chain)
 
     @classmethod
     def add(cls, cid, company=None, reseller=None, annotation=None):

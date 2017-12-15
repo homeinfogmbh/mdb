@@ -67,15 +67,8 @@ def find(options):
 def print_model(model, print_name):
     """Prints the respective model instance."""
 
-    if isinstance(model, Customer):
-        ident = '/'.join(customer.cid for customer in model.reselling_chain)
-        name = model.name
-    else:
-        ident = model.id
-        name = str(model)
-
-    print(ident, file=stderr if print_name else stdout, flush=True)
-    print(name, file=stdout if print_name else stderr, flush=True)
+    print(repr(model), file=stderr if print_name else stdout, flush=True)
+    print(str(model), file=stdout if print_name else stderr, flush=True)
 
 
 def main(options):
