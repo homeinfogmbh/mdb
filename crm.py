@@ -171,8 +171,23 @@ class Address(CRMModel):
         if self.po_box:
             return '{} {}'.format(self.po_box, self.city)
 
-        return '{} {}, {} {}'.format(
-            self.street, self.house_number, self.zip_code, self.city)
+        if self.street:
+            street_houseno = self.street
+
+            if self.house_number:
+                street_houseno += ' ' + self.house_number
+        else:
+            street_houseno = None
+
+        if self.zip_code:
+            zip_code_city = ' '.join((self.zip_code, self.city))
+        else:
+            zip_code_city = self.city
+
+        if street_houseno:
+            return ', '.join((street_houseno, zip_code_city))
+
+        return zip_code_city
 
     def __str__(self):
         """Converts the Address to a string."""
