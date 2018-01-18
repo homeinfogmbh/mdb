@@ -583,7 +583,10 @@ class Customer(CRMModel):
 
     def to_dict(self, cascade=False):
         """Returns a JSON-like dictionary."""
-        dictionary = {'cid': self.cid, 'annotation': self.annotation}
+        dictionary = {'cid': self.cid}
+
+        if self.annotation is not None:
+            dictionary['annotation'] = self.annotation
 
         if cascade:
             dictionary['company'] = self.company.to_dict()
