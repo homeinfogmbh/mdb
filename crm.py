@@ -1,7 +1,6 @@
 """HOMEINFO's CRM database."""
 
-from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField, \
-    DoesNotExist
+from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField
 
 from configlib import INIParser
 from peeweeplus import MySQLDatabase
@@ -150,10 +149,7 @@ class State(CRMModel):
 
     def to_dict(self):
         """Returns a JSON-like dictionary."""
-        return {
-            'country': self.country.id,
-            'iso': self.iso,
-            'name': self.name}
+        return {'country': self.country.id, 'iso': self.iso, 'name': self.name}
 
 
 class Address(CRMModel):
@@ -218,67 +214,39 @@ class Address(CRMModel):
     def add_by_address(cls, address, state=None):
         """Adds a new address by a complete address."""
         street, house_number, zip_code, city = address
+        state_expression = True if state is None else cls.state == state
 
-        if state is None:
-            try:
-                return Address.get(
-                    (Address.city == city) &
-                    (Address.street == street) &
-                    (Address.house_number == house_number) &
-                    (Address.zip_code == zip_code))
-            except DoesNotExist:
-                address = Address()
-                address.city = city
-                address.street = street
-                address.house_number = house_number
-                address.zip_code = zip_code
-                address.save()
-                return address
-        else:
-            try:
-                return Address.get(
-                    (Address.city == city) &
-                    (Address.street == street) &
-                    (Address.house_number == house_number) &
-                    (Address.zip_code == zip_code) &
-                    (Address.state == state))
-            except DoesNotExist:
-                address = Address()
-                address.city = city
-                address.street = street
-                address.house_number = house_number
-                address.zip_code = zip_code
-                address.state = state
-                address.save()
-                return address
+        try:
+            return Address.get(
+                (Address.city == city) & (Address.street == street)
+                & (Address.house_number == house_number)
+                & (Address.zip_code == zip_code) & state_expression)
+        except Address.DoesNotExist:
+            address = Address()
+            address.city = city
+            address.street = street
+            address.house_number = house_number
+            address.zip_code = zip_code
+            address.state = state
+            address.save()
+            return address
 
     @classmethod
     def add_by_po_box(cls, po_box, city, state=None):
         """Adds an address by a PO box."""
-        if state is None:
-            try:
-                return Address.get(
-                    (Address.po_box == po_box) &
-                    (Address.city == city))
-            except DoesNotExist:
-                address = Address()
-                address.po_box = po_box
-                address.city = city
-                address.save()
-                return address
-        else:
-            try:
-                return Address.get(
-                    (Address.po_box == po_box) &
-                    (Address.city == city) &
-                    (Address.state == state))
-            except DoesNotExist:
-                address = Address()
-                address.po_box = po_box
-                address.city = city
-                address.state = state
-                address.save()
-                return address
+        state_expression = True if state is None else cls.state == state
+
+        try:
+            return Address.get(
+                (Address.po_box == po_box) & (Address.city == city)
+                & state_expression)
+        except Address.DoesNotExist:
+            address = Address()
+            address.po_box = po_box
+            address.city = city
+            address.state = state
+            address.save()
+            return address
 
     @classmethod
     def add(cls, city, po_box=None, addr=None, state=None):
@@ -305,8 +273,8 @@ class Address(CRMModel):
                 return cls.add_by_address(address, state=state)
         elif po_box is not None:
             return cls.add_by_po_box(po_box, city, state=state)
-        else:
-            raise po_box_addr_xor_err
+
+        raise po_box_addr_xor_err
 
     @classmethod
     def find(cls, pattern):
@@ -379,7 +347,7 @@ class Company(CRMModel):
         """Adds a new company."""
         try:
             company = cls.get(cls.name == name)
-        except DoesNotExist:
+        except cls.DoesNotExist:
             company = cls()
             company.name = name
             company.abbreviation = abbreviation
@@ -608,7 +576,7 @@ class Tenement(CRMModel):
             return cls.get(
                 (cls.customer == customer) &
                 (cls.address == address))
-        except DoesNotExist:
+        except cls.DoesNotExist:
             tenement = cls()
             tenement.customer = customer
             tenement.address = address
