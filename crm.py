@@ -435,7 +435,7 @@ class Employee(CRMModel):
         related_name='staff')
     first_name = CharField(32, null=True)
     surname = CharField(32)
-    phone = CharField(32)
+    phone = CharField(32, null=True)
     cellphone = CharField(32, null=True)
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
