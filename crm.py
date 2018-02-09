@@ -94,17 +94,6 @@ class Country(CRMModel):
             elif pattern in country.original_name.lower():
                 yield country
 
-    def to_dict(self):
-        """Returns a JSON-like dictionary."""
-        dictionary = {
-            'iso': self.iso,
-            'name': self.name}
-
-        if self.original_name is not None:
-            dictionary['original_name'] = self.original_name
-
-        return dictionary
-
 
 class State(CRMModel):
     """States within countries."""
@@ -146,10 +135,6 @@ class State(CRMModel):
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code."""
         return '{}-{}'.format(self.country.iso, self.iso)
-
-    def to_dict(self):
-        """Returns a JSON-like dictionary."""
-        return {'country': self.country.id, 'iso': self.iso, 'name': self.name}
 
 
 class Address(CRMModel):
@@ -305,30 +290,6 @@ class Address(CRMModel):
             if pattern in address.city.lower():
                 yield address
 
-    def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary."""
-        dictionary = {'city': self.city}
-
-        if self.street is not None:
-            dictionary['street'] = self.street
-
-        if self.house_number is not None:
-            dictionary['house_number'] = self.house_number
-
-        if self.zip_code is not None:
-            dictionary['zip_code'] = self.zip_code
-
-        if self.po_box is not None:
-            dictionary['po_box'] = self.po_box
-
-        if self.state is not None:
-            if cascade:
-                dictionary['state'] = self.state.to_dict()
-            else:
-                dictionary['state'] = self.state.iso
-
-        return dictionary
-
 
 class Company(CRMModel):
     """Represents companies HOMEINFO has relations to."""
@@ -376,21 +337,6 @@ class Company(CRMModel):
 
         return departments
 
-    def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary."""
-        dictionary = {'name': self.name}
-
-        if self.address is not None:
-            if cascade:
-                dictionary['address'] = self.address.to_dict(cascade=cascade)
-            else:
-                dictionary['address'] = str(self.address)
-
-        if self.address is not None:
-            dictionary['annotation'] = self.annotation
-
-        return dictionary
-
 
 class Department(CRMModel):
     """Departments of companies."""
@@ -413,15 +359,6 @@ class Department(CRMModel):
             elif department.type is not None:
                 if pattern in department.type.lower():
                     yield department
-
-    def to_dict(self):
-        """Returns a JSON-like dictionary."""
-        dictionary = {'name': self.name}
-
-        if self.type is not None:
-            dictionary['type'] = self.type
-
-        return dictionary
 
 
 class Employee(CRMModel):
@@ -459,38 +396,6 @@ class Employee(CRMModel):
                 yield employee
             elif pattern in employee.first_name.lower():
                 yield employee
-
-    def to_dict(self):
-        """Returns a JSON-like dictionary."""
-        dictionary = {
-            'surname': self.surname,
-            'phone': self.phone}
-
-        if self.company is not None:
-            dictionary['company'] = self.company.id
-
-        if self.department is not None:
-            dictionary['department'] = self.department.id
-
-        if self.first_name is not None:
-            dictionary['first_name'] = self.first_name
-
-        if self.cellphone is not None:
-            dictionary['cellphone'] = self.cellphone
-
-        if self.email is not None:
-            dictionary['email'] = self.email
-
-        if self.phone_alt is not None:
-            dictionary['phone_alt'] = self.phone_alt
-
-        if self.fax is not None:
-            dictionary['fax'] = self.fax
-
-        if self.address is not None:
-            dictionary['address'] = self.address.id
-
-        return dictionary
 
 
 class Customer(CRMModel):
@@ -549,19 +454,6 @@ class Customer(CRMModel):
         for reseller in iter(lambda: reseller.reseller, None):
             yield reseller
 
-    def to_dict(self, cascade=False):
-        """Returns a JSON-like dictionary."""
-        dictionary = {'cid': self.cid}
-
-        if self.annotation is not None:
-            dictionary['annotation'] = self.annotation
-
-        if cascade:
-            dictionary['company'] = self.company.to_dict()
-            dictionary['reseller'] = self.reseller and self.reseller.to_dict()
-
-        return dictionary
-
 
 class Tenement(CRMModel):
     """Stores tenements of the respective customers."""
@@ -588,6 +480,8 @@ class Tenement(CRMModel):
         """Yields tenements of the respective customer."""
         return cls.select().where(cls.customer == customer)
 
-    def to_dict(self):
+    def to_dict(self, *args, **kwargs):
         """Returns the tenement as a dictionary."""
-        return self.address.to_dict()
+        return {
+            'customer': self.customer.to_dict(*args, **kwargs),
+            'address': self.customer.to_dict(*args, **kwargs)}
