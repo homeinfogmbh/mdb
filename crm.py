@@ -454,6 +454,19 @@ class Customer(CRMModel):
         for reseller in iter(lambda: reseller.reseller, None):
             yield reseller
 
+    def to_dict(self, *args, company=False, cascade=False, **kwargs):
+        """Converts the customer to a JSON-ish dictionary."""
+        dictionary = super().to_dict(*args, **kwargs)
+
+        if company and self.company is not None:
+            dictionary['company'] = self.company.to_dict(*args, **kwargs)
+
+        if cascade and self.reseller is not None:
+            dictionary['reseller'] = self.reseller.to_dict(
+                *args, company=company, cascade=cascade, **kwargs)
+
+        return dictionary
+
 
 class Tenement(CRMModel):
     """Stores tenements of the respective customers."""
