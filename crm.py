@@ -1,9 +1,9 @@
 """HOMEINFO's CRM database."""
 
-from peewee import Model, PrimaryKeyField, CharField, ForeignKeyField
+from peewee import PrimaryKeyField, CharField, ForeignKeyField
 
 from configlib import INIParser
-from peeweeplus import MySQLDatabase
+from peeweeplus import MySQLDatabase, JSONModel
 from strflib import l2lang
 
 __all__ = [
@@ -50,7 +50,7 @@ class AlreadyExists(Exception):
             '{}={}'.format(key, value) for key, value in self.keys.items()])
 
 
-class CRMModel(Model):
+class CRMModel(JSONModel):
     """Generic HOMEINFO CRM Model."""
 
     class Meta:
