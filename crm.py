@@ -454,7 +454,7 @@ class Customer(CRMModel):
         for reseller in iter(lambda: reseller.reseller, None):
             yield reseller
 
-    def to_dict(self, *args, company=False, cascade=False, **kwargs):
+    def to_dict(self, *args, company=True, cascade=False, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
         dictionary = super().to_dict(*args, **kwargs)
 
