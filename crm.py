@@ -97,7 +97,7 @@ class State(CRMModel):
     """States within countries."""
 
     country = ForeignKeyField(
-        Country, db_column='country', related_name='states')
+        Country, column_name='country', related_name='states')
     # An *exactly* two characters long ISO 3166-2 state code.
     iso = CharField(2)
     name = CharField(64)
@@ -143,7 +143,7 @@ class Address(CRMModel):
     zip_code = CharField(32, null=True)
     po_box = CharField(32, null=True)
     city = CharField(64)
-    state = ForeignKeyField(State, db_column='state', null=True)
+    state = ForeignKeyField(State, column_name='state', null=True)
 
     def __repr__(self):
         """Converts the Address to a one-line string."""
@@ -294,7 +294,7 @@ class Company(CRMModel):
 
     name = CharField(255)
     abbreviation = CharField(16, null=True, default=None)
-    address = ForeignKeyField(Address, db_column='address', null=True)
+    address = ForeignKeyField(Address, column_name='address', null=True)
     annotation = CharField(256, null=True)
 
     def __str__(self):
@@ -363,10 +363,10 @@ class Employee(CRMModel):
     """Employees."""
 
     company = ForeignKeyField(
-        Company, db_column='company',
+        Company, column_name='company',
         related_name='employees')
     department = ForeignKeyField(
-        Department, db_column='department',
+        Department, column_name='department',
         related_name='staff')
     first_name = CharField(32, null=True)
     surname = CharField(32)
@@ -375,7 +375,7 @@ class Employee(CRMModel):
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
-    address = ForeignKeyField(Address, db_column='address', null=True)
+    address = ForeignKeyField(Address, column_name='address', null=True)
 
     def __str__(self):
         """Returns the employee's name."""
@@ -400,8 +400,8 @@ class Customer(CRMModel):
     """CRM's customer(s)."""
 
     cid = CharField(255)
-    company = ForeignKeyField(Company, db_column='company', null=True)
-    reseller = ForeignKeyField('self', db_column='reseller', null=True)
+    company = ForeignKeyField(Company, column_name='company', null=True)
+    reseller = ForeignKeyField('self', column_name='reseller', null=True)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
@@ -469,8 +469,8 @@ class Customer(CRMModel):
 class Tenement(CRMModel):
     """Stores tenements of the respective customers."""
 
-    customer = ForeignKeyField(Customer, db_column='customer')
-    address = ForeignKeyField(Address, db_column='address')
+    customer = ForeignKeyField(Customer, column_name='customer')
+    address = ForeignKeyField(Address, column_name='address')
 
     @classmethod
     def add(cls, customer, address):
