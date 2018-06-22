@@ -363,11 +363,9 @@ class Employee(CRMModel):
     """Employees."""
 
     company = ForeignKeyField(
-        Company, column_name='company',
-        related_name='employees')
+        Company, column_name='company', related_name='employees')
     department = ForeignKeyField(
-        Department, column_name='department',
-        related_name='staff')
+        Department, column_name='department', related_name='staff')
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
