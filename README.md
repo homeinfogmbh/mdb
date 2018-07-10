@@ -1,8 +1,8 @@
-# homeinfo.crm
-Customer-Relationship-Management database for HOMEINFO.
+# mdb
+Master database for HOMEINFO.
 
 ## About
-*homeinfo.crm* provides ORM models for
+*mdb* provides ORM models for
 * countries
 * states
 * addresses
