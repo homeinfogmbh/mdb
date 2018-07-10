@@ -18,7 +18,7 @@ __all__ = [
     'Tenement']
 
 
-CONFIG = INIParser('/etc/crm.conf')
+CONFIG = INIParser('/etc/mdb.conf')
 DATABASE = MySQLDatabase.from_config(CONFIG['db'])
 
 

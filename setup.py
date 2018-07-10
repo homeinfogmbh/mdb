@@ -9,7 +9,6 @@ setup(
     author_email='info@homeinfo.de',
     maintainer='Richard Neumann',
     maintainer_email='r.neumann@homeinfo.de',
-    package_dir={'homeinfo': ''},
-    py_modules=['homeinfo.crm'],
-    scripts=['files/crmgr'],
-    description='HOMEINFO Customer Relationship Management ORM')
+    py_modules=['mdb'],
+    scripts=['files/mdbmgr'],
+    description='HOMEINFO Master Database ORM.')
