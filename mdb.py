@@ -450,6 +450,11 @@ class Customer(CRMModel):
         for reseller in iter(lambda: reseller.reseller, None):
             yield reseller
 
+    @property
+    def domainname(self):
+        """Returns the domain name for terminal host names."""
+        return '.'.join(customer.cid for customer in self.reselling_chain)
+
     def to_dict(self, *args, company=True, cascade=False, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
         dictionary = super().to_dict(*args, **kwargs)
@@ -457,9 +462,12 @@ class Customer(CRMModel):
         if company and self.company is not None:
             dictionary['company'] = self.company.to_dict(*args, **kwargs)
 
-        if cascade and self.reseller is not None:
-            dictionary['reseller'] = self.reseller.to_dict(
-                *args, company=company, cascade=cascade, **kwargs)
+        if self.reseller is not None:
+            if cascade:
+                dictionary['reseller'] = self.reseller.to_dict(
+                    *args, company=company, cascade=cascade, **kwargs)
+            else:
+                dictionary['reseller'] = self.reseller.id
 
         return dictionary
 
