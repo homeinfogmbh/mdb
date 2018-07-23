@@ -288,6 +288,32 @@ class Address(CRMModel):
             if pattern in address.city.lower():
                 yield address
 
+    @classmethod
+    def from_dict(cls, dictionary):
+        """Returns an address from the respective dictionary."""
+        city = dictionary['city']
+        po_box = dictionary.get('po_box')
+
+        try:
+            street = dictionary['street']
+            house_number = dictionary['house_number']
+            zip_code = dictionary['zip_code']
+        except KeyError:
+            addr = None
+        else:
+            addr = (street, house_number, zip_code)
+
+        state = dictionary.get('state')
+
+        if state is not None:
+            for state in State.find(state):
+                break
+
+            if state is None:
+                raise State.DoesNotExist()
+
+        return cls.add(city, po_box=po_box, addr=addr, state=state)
+
 
 class Company(CRMModel):
     """Represents companies HOMEINFO has relations to."""
