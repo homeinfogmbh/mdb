@@ -1,6 +1,6 @@
 """HOMEINFO's CRM database."""
 
-from peewee import PrimaryKeyField, CharField, ForeignKeyField
+from peewee import PrimaryKeyField, ForeignKeyField, IntegerField, CharField
 
 from configlib import INIParser
 from peeweeplus import MySQLDatabase, JSONModel
@@ -423,7 +423,7 @@ class Employee(CRMModel):
 class Customer(CRMModel):
     """CRM's customer(s)."""
 
-    cid = CharField(255)
+    id = IntegerField(primary_key=True)
     company = ForeignKeyField(Company, column_name='company', null=True)
     reseller = ForeignKeyField('self', column_name='reseller', null=True)
     annotation = CharField(255, null=True, default=None)
@@ -434,66 +434,34 @@ class Customer(CRMModel):
 
     def __repr__(self):
         """Returns the customer's ID."""
-        return ':'.join(customer.cid for customer in self.reselling_chain)
-
-    @classmethod
-    def add(cls, cid, company=None, reseller=None, annotation=None):
-        """Adds a new customer."""
-        customer = cls()
-        customer.cid = str(cid)
-        customer.company = company
-        customer.reseller = reseller
-        customer.annotation = annotation
-        customer.save()
-        return customer
+        return str(self.id)
 
     @classmethod
     def find(cls, pattern):
         """Finds a customer by the provided pattern."""
+        try:
+            cid = int(pattern)
+        except (TypeError, ValueError):
+            cid_sel = False
+        else:
+            cid_sel = cls.id == cid
+
+        company_abbr_sel = Company.abbreviation ** pattern
+        company_name_sel = Company.name ** '%{}%'.format(pattern)
         return cls.select().join(Company).where(
-            (cls.cid == pattern) | (Company.abbreviation ** pattern)
-            | (Company.name ** '%{}%'.format(pattern)))
-
-    @classmethod
-    def by_reseller(cls, reseller):
-        """Yields customers by reseller."""
-        if reseller is None:
-            return cls.select().where(cls.reseller >> None)
-
-        return cls.select().where(cls.reseller == reseller)
+            cid_sel | company_abbr_sel | company_name_sel)
 
     @property
     def name(self):
         """Returns the customer's name."""
         return self.company.name
 
-    @property
-    def reselling_chain(self):
-        """Returns the reselling chain."""
-        yield self
-        reseller = self
-
-        for reseller in iter(lambda: reseller.reseller, None):
-            yield reseller
-
-    @property
-    def domainname(self):
-        """Returns the domain name for terminal host names."""
-        return '.'.join(customer.cid for customer in self.reselling_chain)
-
-    def to_dict(self, *args, company=True, cascade=False, **kwargs):
+    def to_dict(self, *args, company=True, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
         dictionary = super().to_dict(*args, **kwargs)
 
         if company and self.company is not None:
             dictionary['company'] = self.company.to_dict(*args, **kwargs)
-
-        if self.reseller is not None:
-            if cascade:
-                dictionary['reseller'] = self.reseller.to_dict(
-                    *args, company=company, cascade=cascade, **kwargs)
-            else:
-                dictionary['reseller'] = self.reseller.id
 
         return dictionary
 
