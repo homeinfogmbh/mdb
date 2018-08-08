@@ -456,12 +456,12 @@ class Customer(CRMModel):
         """Returns the customer's name."""
         return self.company.name
 
-    def to_dict(self, *args, company=True, **kwargs):
+    def to_dict(self, company=True, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
-        dictionary = super().to_dict(*args, **kwargs)
+        dictionary = super().to_dict(**kwargs, fk_fields=not company)
 
         if company and self.company is not None:
-            dictionary['company'] = self.company.to_dict(*args, **kwargs)
+            dictionary['company'] = self.company.to_dict(**kwargs)
 
         return dictionary
 
