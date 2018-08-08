@@ -458,7 +458,7 @@ class Customer(CRMModel):
 
     def to_dict(self, company=True, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
-        dictionary = super().to_dict(fk_fields=not company, **kwargs)
+        dictionary = super().to_dict(**kwargs)
 
         if company and self.company is not None:
             dictionary['company'] = self.company.to_dict(**kwargs)
