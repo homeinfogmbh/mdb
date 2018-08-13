@@ -96,8 +96,7 @@ class Country(CRMModel):
 class State(CRMModel):
     """States within countries."""
 
-    country = ForeignKeyField(
-        Country, column_name='country', related_name='states')
+    country = ForeignKeyField(Country, column_name='country', backref='states')
     # An *exactly* two characters long ISO 3166-2 state code.
     iso = CharField(2)
     name = CharField(64)
@@ -389,9 +388,9 @@ class Employee(CRMModel):
     """Employees."""
 
     company = ForeignKeyField(
-        Company, column_name='company', related_name='employees')
+        Company, column_name='company', backref='employees')
     department = ForeignKeyField(
-        Department, column_name='department', related_name='staff')
+        Department, column_name='department', backref='staff')
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
@@ -424,8 +423,10 @@ class Customer(CRMModel):
     """CRM's customer(s)."""
 
     id = IntegerField(primary_key=True)
-    company = ForeignKeyField(Company, column_name='company', null=True)
-    reseller = ForeignKeyField('self', column_name='reseller', null=True)
+    company = ForeignKeyField(
+        Company, column_name='company', backref='customers')
+    reseller = ForeignKeyField(
+        'self', column_name='reseller', backref='resellees', null=True)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
@@ -456,11 +457,11 @@ class Customer(CRMModel):
         """Returns the customer's name."""
         return self.company.name
 
-    def to_dict(self, company=True, **kwargs):
+    def to_dict(self, *, company=False, **kwargs):
         """Converts the customer to a JSON-ish dictionary."""
         dictionary = super().to_dict(**kwargs)
 
-        if company and self.company is not None:
+        if company:
             dictionary['company'] = self.company.to_dict(**kwargs)
 
         return dictionary
@@ -469,7 +470,8 @@ class Customer(CRMModel):
 class Tenement(CRMModel):
     """Stores tenements of the respective customers."""
 
-    customer = ForeignKeyField(Customer, column_name='customer')
+    customer = ForeignKeyField(
+        Customer, column_name='customer', backref='tenements')
     address = ForeignKeyField(Address, column_name='address')
 
     @classmethod
@@ -477,8 +479,7 @@ class Tenement(CRMModel):
         """Adds a new tenement."""
         try:
             return cls.get(
-                (cls.customer == customer) &
-                (cls.address == address))
+                (cls.customer == customer) & (cls.address == address))
         except cls.DoesNotExist:
             tenement = cls()
             tenement.customer = customer
@@ -491,8 +492,14 @@ class Tenement(CRMModel):
         """Yields tenements of the respective customer."""
         return cls.select().where(cls.customer == customer)
 
-    def to_dict(self, *args, **kwargs):
-        """Returns the tenement as a dictionary."""
-        return {
-            'customer': self.customer.to_dict(*args, **kwargs),
-            'address': self.customer.to_dict(*args, **kwargs)}
+    def to_dict(self, *, customer=False, address=False, **kwargs):
+        """Converts the tenement to a JSON-ish dictionary."""
+        dictionary = self.to_dict(**kwargs)
+
+        if customer:
+            dictionary['customer'] = self.customer.to_dict(**kwargs)
+
+        if address:
+            dictionary['address'] = self.address.to_dict(**kwargs)
+
+        return dictionary
