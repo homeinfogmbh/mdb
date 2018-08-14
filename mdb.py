@@ -1,9 +1,9 @@
 """HOMEINFO's CRM database."""
 
-from peewee import PrimaryKeyField, ForeignKeyField, IntegerField, CharField
+from peewee import AutoField, ForeignKeyField, IntegerField, CharField
 
 from configlib import INIParser
-from peeweeplus import MySQLDatabase, JSONModel
+from peeweeplus import MySQLDatabase, JSONModel, JSONField
 from strflib import l2lang
 
 __all__ = [
@@ -56,7 +56,7 @@ class CRMModel(JSONModel):
         database = DATABASE
         schema = database.database
 
-    id = PrimaryKeyField()
+    id = JSONField(AutoField)
 
     def __repr__(self):
         """Returns the model's ID as per default."""
@@ -67,9 +67,10 @@ class Country(CRMModel):
     """Countries."""
 
     # An *exactly* two characters long ISO 3166-2 country code
-    iso = CharField(2)
-    name = CharField(64)
-    original_name = CharField(64, null=True, default=None)
+    iso = JSONField(CharField, 2)
+    name = JSONField(CharField, 64)
+    original_name = JSONField(
+        CharField, 64, null=True, default=None, key='originalName')
 
     def __str__(self):
         """Converts the country to a string."""
@@ -96,10 +97,11 @@ class Country(CRMModel):
 class State(CRMModel):
     """States within countries."""
 
-    country = ForeignKeyField(Country, column_name='country', backref='states')
+    country = JSONField(
+        ForeignKeyField, Country, column_name='country', backref='states')
     # An *exactly* two characters long ISO 3166-2 state code.
-    iso = CharField(2)
-    name = CharField(64)
+    iso = JSONField(CharField, 2)
+    name = JSONField(CharField, 64)
 
     def __str__(self):
         """Returns the country's name."""
@@ -137,12 +139,12 @@ class State(CRMModel):
 class Address(CRMModel):
     """Address data."""
 
-    street = CharField(64, null=True)
-    house_number = CharField(8, null=True)
-    zip_code = CharField(32, null=True)
-    po_box = CharField(32, null=True)
-    city = CharField(64)
-    state = ForeignKeyField(State, column_name='state', null=True)
+    street = JSONField(CharField, 64, null=True)
+    house_number = JSONField(CharField, 8, null=True)
+    zip_code = JSONField(CharField, 32, null=True, key='zipCode')
+    po_box = JSONField(CharField, 32, null=True, key='POBox')
+    city = JSONField(CharField, 64)
+    state = JSONField(ForeignKeyField, State, column_name='state', null=True)
 
     def __repr__(self):
         """Converts the Address to a one-line string."""
@@ -317,10 +319,11 @@ class Address(CRMModel):
 class Company(CRMModel):
     """Represents companies HOMEINFO has relations to."""
 
-    name = CharField(255)
-    abbreviation = CharField(16, null=True, default=None)
-    address = ForeignKeyField(Address, column_name='address', null=True)
-    annotation = CharField(256, null=True)
+    name = JSONField(CharField, 255)
+    abbreviation = JSONField(CharField, 16, null=True, default=None)
+    address = JSONField(
+        ForeignKeyField, Address, column_name='address', null=True)
+    annotation = JSONField(CharField, 256, null=True)
 
     def __str__(self):
         """Returns the company's name."""
@@ -345,10 +348,11 @@ class Company(CRMModel):
     @classmethod
     def find(cls, pattern):
         """Finds companies by primary key or name."""
+        pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.name ** '%{}%'.format(pattern))
+            (cls.name ** pattern)
             | (cls.abbreviation ** pattern)
-            | (cls.annotation ** '%{}%'.format(pattern)))
+            | (cls.annotation ** pattern))
 
     @property
     def departments(self):
@@ -364,8 +368,8 @@ class Company(CRMModel):
 class Department(CRMModel):
     """Departments of companies."""
 
-    name = CharField(64)
-    type = CharField(64, null=True)
+    name = JSONField(CharField, 64)
+    type = JSONField(CharField, 64, null=True)
 
     def __str__(self):
         """Returns the department's name."""
@@ -387,18 +391,19 @@ class Department(CRMModel):
 class Employee(CRMModel):
     """Employees."""
 
-    company = ForeignKeyField(
-        Company, column_name='company', backref='employees')
-    department = ForeignKeyField(
-        Department, column_name='department', backref='staff')
-    first_name = CharField(32, null=True)
-    surname = CharField(32)
-    phone = CharField(32, null=True)
-    cellphone = CharField(32, null=True)
-    email = CharField(64, null=True)
-    phone_alt = CharField(32, null=True)
-    fax = CharField(32, null=True)
-    address = ForeignKeyField(Address, column_name='address', null=True)
+    company = JSONField(
+        ForeignKeyField, Company, column_name='company', backref='employees')
+    department = JSONField(
+        ForeignKeyField, Department, column_name='department', backref='staff')
+    first_name = JSONField(CharField, 32, null=True, key='firstName')
+    surname = JSONField(CharField, 32)
+    phone = JSONField(CharField, 32, null=True)
+    cellphone = JSONField(CharField, 32, null=True)
+    email = JSONField(CharField, 64, null=True)
+    phone_alt = JSONField(CharField, 32, null=True, key='phoneAlt')
+    fax = JSONField(CharField, 32, null=True)
+    address = JSONField(
+        ForeignKeyField, Address, column_name='address', null=True)
 
     def __str__(self):
         """Returns the employee's name."""
@@ -422,12 +427,13 @@ class Employee(CRMModel):
 class Customer(CRMModel):
     """CRM's customer(s)."""
 
-    id = IntegerField(primary_key=True)
-    company = ForeignKeyField(
-        Company, column_name='company', backref='customers')
-    reseller = ForeignKeyField(
-        'self', column_name='reseller', backref='resellees', null=True)
-    annotation = CharField(255, null=True, default=None)
+    id = JSONField(IntegerField, primary_key=True)
+    company = JSONField(
+        ForeignKeyField, Company, column_name='company', backref='customers')
+    reseller = JSONField(
+        ForeignKeyField, 'self', column_name='reseller', backref='resellees',
+        null=True)
+    annotation = JSONField(CharField, 255, null=True, default=None)
 
     def __str__(self):
         """Returns the customer's full name."""
@@ -470,9 +476,9 @@ class Customer(CRMModel):
 class Tenement(CRMModel):
     """Stores tenements of the respective customers."""
 
-    customer = ForeignKeyField(
-        Customer, column_name='customer', backref='tenements')
-    address = ForeignKeyField(Address, column_name='address')
+    customer = JSONField(
+        ForeignKeyField, Customer, column_name='customer', backref='tenements')
+    address = JSONField(ForeignKeyField, Address, column_name='address')
 
     @classmethod
     def add(cls, customer, address):
