@@ -289,12 +289,12 @@ class Address(CRMModel):
     def from_json(cls, dictionary):
         """Returns an address from the respective dictionary."""
         city = dictionary['city']
-        po_box = dictionary.get('po_box')
+        po_box = dictionary.get('poBox')
 
         try:
             street = dictionary['street']
-            house_number = dictionary['house_number']
-            zip_code = dictionary['zip_code']
+            house_number = dictionary['houseNumber']
+            zip_code = dictionary['zipCode']
         except KeyError:
             addr = None
         else:
