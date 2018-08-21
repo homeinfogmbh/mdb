@@ -48,6 +48,29 @@ class AlreadyExists(Exception):
             '{}={}'.format(key, value) for key, value in self.keys.items()])
 
 
+class Pattern(str):
+    """A string search pattern."""
+
+    def __new__(cls, string):
+        """Creates the new pattern."""
+        return super().__new__(cls, string)
+
+    def match(self, value, *, ignore_case=True):
+        """Matches a pattern."""
+        if value is None:
+            return False
+
+        if ignore_case:
+            return self.lower() in value.lower()
+
+        return self in value
+
+    def match_any(self, *values, ignore_case=True):
+        """Matches any of the given values."""
+        return any(
+            self.match(value, ignore_case=ignore_case) for value in values)
+
+
 class CRMModel(JSONModel):
     """Generic HOMEINFO CRM Model."""
 
@@ -142,7 +165,8 @@ class Address(CRMModel):
     po_box = CharField(32, null=True)
     city = CharField(64)
     state = ForeignKeyField(State, column_name='state', null=True)
-    JSON_KEYS = {'zipCode': zip_code, 'POBox': po_box}
+    JSON_KEYS = {
+        'houseNumber': house_number, 'zipCode': zip_code, 'POBox': po_box}
 
     def __repr__(self):
         """Converts the Address to a one-line string."""
@@ -168,7 +192,7 @@ class Address(CRMModel):
         return zip_code_city
 
     def __str__(self):
-        """Converts the Address to a string."""
+        """Converts the Address to a multi-line string."""
         result = ''
 
         if self.po_box:
@@ -196,13 +220,14 @@ class Address(CRMModel):
     def add_by_address(cls, address, state=None):
         """Adds a new address by a complete address."""
         street, house_number, zip_code, city = address
-        state_expression = True if state is None else cls.state == state
+        select = True if state is None else cls.state == state
+        select &= Address.city == city
+        select &= Address.street == street
+        select &= Address.house_number == house_number
+        select &= Address.zip_code == zip_code
 
         try:
-            return Address.get(
-                (Address.city == city) & (Address.street == street)
-                & (Address.house_number == house_number)
-                & (Address.zip_code == zip_code) & state_expression)
+            return Address.get(select)
         except Address.DoesNotExist:
             address = Address()
             address.city = city
@@ -215,12 +240,12 @@ class Address(CRMModel):
     @classmethod
     def add_by_po_box(cls, po_box, city, state=None):
         """Adds an address by a PO box."""
-        state_expression = True if state is None else cls.state == state
+        select = True if state is None else cls.state == state
+        select &= Address.po_box == po_box
+        select &= Address.city == city
 
         try:
-            return Address.get(
-                (Address.po_box == po_box) & (Address.city == city)
-                & state_expression)
+            return Address.get(select)
         except Address.DoesNotExist:
             address = Address()
             address.po_box = po_box
@@ -257,59 +282,42 @@ class Address(CRMModel):
         raise po_box_addr_xor_err
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern, *, ignore_case=True):
         """Finds an address."""
-        pattern = pattern.lower()
+        pattern = Pattern(pattern)
 
         for address in cls:
-            if address.street is not None:
-                if pattern in address.street.lower():
-                    yield address
-                    continue
-
-            if address.house_number is not None:
-                if pattern in address.house_number.lower():
-                    yield address
-                    continue
-
-            if address.zip_code is not None:
-                if pattern in address.zip_code.lower():
-                    yield address
-                    continue
-
-            if address.po_box is not None:
-                if pattern in address.po_box.lower():
-                    yield address
-                    continue
-
-            if pattern in address.city.lower():
+            if pattern.match_any(
+                    address.street, address.house_number, address.zip_code,
+                    address.po_box, address.city, ignore_case=ignore_case):
                 yield address
+                continue
 
     @classmethod
-    def from_json(cls, dictionary):
+    def from_json(cls, json):
         """Returns an address from the respective dictionary."""
-        city = dictionary['city']
-        po_box = dictionary.get('poBox')
+        state = json.pop('state', None)
+        record = super().from_json(json)
+        addr = (record.street, record.house_number, record.zip_code)
 
-        try:
-            street = dictionary['street']
-            house_number = dictionary['houseNumber']
-            zip_code = dictionary['zipCode']
-        except KeyError:
-            addr = None
+        if all(addr) and not record.po_box:
+            pass
+        elif not any(addr) and record.po_box:
+            pass
         else:
-            addr = (street, house_number, zip_code)
-
-        state = dictionary.get('state')
+            raise ValueError('Must specify either poBox or addr.')
 
         if state is not None:
-            for state in State.find(state):
-                break
-
-            if state is None:
+            try:
+                state, *ambiguous = State.find(state)
+            except ValueError:
                 raise State.DoesNotExist()
 
-        return cls.add(city, po_box=po_box, addr=addr, state=state)
+            if ambiguous:
+                raise ValueError('Ambiguous state.')
+
+        record.state = state
+        return record
 
 
 class Company(CRMModel):
