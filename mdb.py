@@ -48,8 +48,8 @@ class AlreadyExists(Exception):
             '{}={}'.format(key, value) for key, value in self.keys.items()])
 
 
-class CRMModel(JSONModel):
-    """Generic HOMEINFO CRM Model."""
+class MDBModel(JSONModel):
+    """Generic HOMEINFO MDB Model."""
 
     class Meta:
         """Database and schema configuration."""
@@ -61,7 +61,7 @@ class CRMModel(JSONModel):
         return str(self.id)
 
 
-class Country(CRMModel):
+class Country(MDBModel):
     """Countries."""
 
     # An *exactly* two characters long ISO 3166-2 country code
@@ -87,7 +87,7 @@ class Country(CRMModel):
             | (cls.original_name ** pattern))
 
 
-class State(CRMModel):
+class State(MDBModel):
     """States within countries."""
 
     country = ForeignKeyField(Country, column_name='country', backref='states')
@@ -123,7 +123,7 @@ class State(CRMModel):
         return '{}-{}'.format(self.country.iso, self.iso)
 
 
-class Address(CRMModel):
+class Address(MDBModel):
     """Address data."""
 
     street = CharField(64, null=True)
@@ -284,7 +284,7 @@ class Address(CRMModel):
         return record
 
 
-class Company(CRMModel):
+class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
@@ -330,7 +330,7 @@ class Company(CRMModel):
         return departments
 
 
-class Department(CRMModel):
+class Department(MDBModel):
     """Departments of companies."""
 
     name = CharField(64)
@@ -347,7 +347,7 @@ class Department(CRMModel):
         return cls.select().where((cls.name ** pattern) | (cls.type * pattern))
 
 
-class Employee(CRMModel):
+class Employee(MDBModel):
     """Employees."""
 
     company = ForeignKeyField(
@@ -379,7 +379,7 @@ class Employee(CRMModel):
             (cls.surname ** pattern) | (cls.first_name ** pattern))
 
 
-class Customer(CRMModel):
+class Customer(MDBModel):
     """CRM's customer(s)."""
 
     id = IntegerField(primary_key=True)
@@ -427,7 +427,7 @@ class Customer(CRMModel):
         return dictionary
 
 
-class Tenement(CRMModel):
+class Tenement(MDBModel):
     """Stores tenements of the respective customers."""
 
     customer = ForeignKeyField(
