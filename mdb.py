@@ -1,4 +1,4 @@
-"""HOMEINFO's CRM database."""
+"""HOMEINFO's main data database."""
 
 from peewee import ForeignKeyField, IntegerField, CharField
 
