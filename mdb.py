@@ -81,15 +81,10 @@ class Country(CRMModel):
     @classmethod
     def find(cls, pattern):
         """Finds countries by patterns."""
-        pattern = pattern.lower()
-
-        for country in cls:
-            if pattern in country.iso.lower():
-                yield country
-            elif pattern in country.name.lower():
-                yield country
-            elif pattern in country.original_name.lower():
-                yield country
+        pattern = '%{}%'.format(pattern)
+        return cls.select().where(
+            (cls.iso ** pattern) | (cls.name ** pattern)
+            | (cls.original_name ** pattern))
 
 
 class State(CRMModel):
@@ -115,17 +110,12 @@ class State(CRMModel):
             country = int(pattern)
         except ValueError:
             if len(pattern) == 2:
-                for state in cls.select().where(cls.iso == pattern):
-                    yield state
-            else:
-                pattern = pattern.lower()
+                return cls.select().where(cls.iso == pattern)
 
-                for state in cls:
-                    if pattern in state.name.lower():
-                        yield state
-        else:
-            for state in cls.select().where(cls.country == country):
-                yield state
+            pattern = '%{}%'.format(pattern)
+            return cls.select().where(cls.name ** pattern)
+
+        return cls.select().where(cls.country == country)
 
     @property
     def iso3166(self):
@@ -259,24 +249,13 @@ class Address(CRMModel):
         raise po_box_addr_xor_err
 
     @classmethod
-    def find(cls, pattern, *, ignore_case=True):
+    def find(cls, pattern):
         """Finds an address."""
         pattern = '%{}%'.format(pattern)
-
-        if ignore_case:
-            select = cls.street ** pattern
-            select |= cls.house_number ** pattern
-            select |= cls.zip_code ** pattern
-            select |= cls.po_box ** pattern
-            select |= cls.city ** pattern
-        else:
-            select = cls.street % pattern
-            select |= cls.house_number % pattern
-            select |= cls.zip_code % pattern
-            select |= cls.po_box % pattern
-            select |= cls.city % pattern
-
-        return cls.select().where(select)
+        return cls.select().where(
+            (cls.street ** pattern) | (cls.house_number ** pattern)
+            | (cls.zip_code ** pattern) | (cls.po_box ** pattern)
+            | (cls.city ** pattern))
 
     @classmethod
     def from_json(cls, json):
@@ -337,8 +316,7 @@ class Company(CRMModel):
         """Finds companies by primary key or name."""
         pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.name ** pattern)
-            | (cls.abbreviation ** pattern)
+            (cls.name ** pattern) | (cls.abbreviation ** pattern)
             | (cls.annotation ** pattern))
 
     @property
@@ -365,14 +343,8 @@ class Department(CRMModel):
     @classmethod
     def find(cls, pattern):
         """Finds a department."""
-        pattern = pattern.lower()
-
-        for department in cls:
-            if pattern in department.name.lower():
-                yield department
-            elif department.type is not None:
-                if pattern in department.type.lower():
-                    yield department
+        pattern = '%{}%'.format(pattern)
+        return cls.select().where((cls.name ** pattern) | (cls.type * pattern))
 
 
 class Employee(CRMModel):
@@ -402,13 +374,9 @@ class Employee(CRMModel):
     @classmethod
     def find(cls, pattern):
         """Finds an employee."""
-        pattern = pattern.lower()
-
-        for employee in cls:
-            if pattern in employee.surname.lower():
-                yield employee
-            elif pattern in employee.first_name.lower():
-                yield employee
+        pattern = '%{}%'.format(pattern)
+        return cls.select().where(
+            (cls.surname ** pattern) | (cls.first_name ** pattern))
 
 
 class Customer(CRMModel):
