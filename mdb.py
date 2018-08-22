@@ -48,29 +48,6 @@ class AlreadyExists(Exception):
             '{}={}'.format(key, value) for key, value in self.keys.items()])
 
 
-class Pattern(str):
-    """A string search pattern."""
-
-    def __new__(cls, string):
-        """Creates the new pattern."""
-        return super().__new__(cls, string)
-
-    def match(self, value, *, ignore_case=True):
-        """Matches a pattern."""
-        if value is None:
-            return False
-
-        if ignore_case:
-            return self.lower() in value.lower()
-
-        return self in value
-
-    def match_any(self, *values, ignore_case=True):
-        """Matches any of the given values."""
-        return any(
-            self.match(value, ignore_case=ignore_case) for value in values)
-
-
 class CRMModel(JSONModel):
     """Generic HOMEINFO CRM Model."""
 
@@ -284,14 +261,22 @@ class Address(CRMModel):
     @classmethod
     def find(cls, pattern, *, ignore_case=True):
         """Finds an address."""
-        pattern = Pattern(pattern)
+        pattern = '%{}%'.format(pattern)
 
-        for address in cls:
-            if pattern.match_any(
-                    address.street, address.house_number, address.zip_code,
-                    address.po_box, address.city, ignore_case=ignore_case):
-                yield address
-                continue
+        if ignore_case:
+            select = cls.street ** pattern
+            select |= cls.house_number ** pattern
+            select |= cls.zip_code ** pattern
+            select |= cls.po_box ** pattern
+            select |= cls.city ** pattern
+        else:
+            select = cls.street % pattern
+            select |= cls.house_number % pattern
+            select |= cls.zip_code % pattern
+            select |= cls.po_box % pattern
+            select |= cls.city % pattern
+
+        return cls.select().where(select)
 
     @classmethod
     def from_json(cls, json):
