@@ -68,7 +68,6 @@ class Country(MDBModel):
     iso = CharField(2)
     name = CharField(64)
     original_name = CharField(64, null=True, default=None)
-    JSON_KEYS = {'originalName': original_name}
 
     def __str__(self):
         """Converts the country to a string."""
@@ -132,8 +131,6 @@ class Address(MDBModel):
     po_box = CharField(32, null=True)
     city = CharField(64)
     state = ForeignKeyField(State, column_name='state', null=True)
-    JSON_KEYS = {
-        'houseNumber': house_number, 'zipCode': zip_code, 'POBox': po_box}
 
     def __repr__(self):
         """Converts the Address to a one-line string."""
@@ -362,7 +359,6 @@ class Employee(MDBModel):
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
     address = ForeignKeyField(Address, column_name='address', null=True)
-    JSON_KEYS = {'firstName': first_name, 'phoneAlt': phone_alt}
 
     def __str__(self):
         """Returns the employee's name."""
