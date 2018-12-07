@@ -2,7 +2,7 @@
 
 from peewee import ForeignKeyField, IntegerField, CharField
 
-from configlib import INIParser
+from configlib import loadcfg
 from peeweeplus import MySQLDatabase, JSONModel
 from strflib import l2lang
 
@@ -18,7 +18,7 @@ __all__ = [
     'Tenement']
 
 
-CONFIG = INIParser('/etc/mdb.conf')
+CONFIG = loadcfg('mdb.conf')
 DATABASE = MySQLDatabase.from_config(CONFIG['db'])
 
 
