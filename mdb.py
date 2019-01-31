@@ -4,7 +4,7 @@ from peewee import ForeignKeyField, IntegerField, CharField
 
 from configlib import loadcfg
 from peeweeplus import MySQLDatabase, JSONModel
-from strflib import l2lang
+
 
 __all__ = [
     'AlreadyExists',
@@ -14,8 +14,7 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer',
-    'Tenement']
+    'Customer']
 
 
 CONFIG = loadcfg('mdb.conf')
@@ -33,26 +32,18 @@ class AlreadyExists(Exception):
 
     def __str__(self):
         """Prints record and keys."""
-        keys_string = self.keys_string
+        record_type = type(self.record).__name__
 
-        if keys_string:
-            return '{} already exists for {}.'.format(
-                self.record.__class__.__name__, keys_string)
+        if self.keys:
+            return '{} already exists for {}.'.format(record_type, self.keys)
 
-        return '{} already exists.'.format(self.record.__class__.__name__)
-
-    @property
-    def keys_string(self):
-        """Returns the keys string."""
-        return l2lang([
-            '{}={}'.format(key, value) for key, value in self.keys.items()])
+        return '{} already exists.'.format(record_type)
 
 
 class MDBModel(JSONModel):
     """Generic HOMEINFO MDB Model."""
 
-    class Meta:
-        """Database and schema configuration."""
+    class Meta:     # pylint: disable=C0111,R0903
         database = DATABASE
         schema = database.database
 
@@ -419,42 +410,5 @@ class Customer(MDBModel):
 
         if company:
             dictionary['company'] = self.company.to_json(**kwargs)
-
-        return dictionary
-
-
-class Tenement(MDBModel):
-    """Stores tenements of the respective customers."""
-
-    customer = ForeignKeyField(
-        Customer, column_name='customer', backref='tenements')
-    address = ForeignKeyField(Address, column_name='address')
-
-    @classmethod
-    def add(cls, customer, address):
-        """Adds a new tenement."""
-        try:
-            return cls.get(
-                (cls.customer == customer) & (cls.address == address))
-        except cls.DoesNotExist:
-            tenement = cls()
-            tenement.customer = customer
-            tenement.address = address
-            return tenement
-
-    @classmethod
-    def by_customer(cls, customer):
-        """Yields tenements of the respective customer."""
-        return cls.select().where(cls.customer == customer)
-
-    def to_json(self, *, customer=False, address=False, **kwargs):
-        """Converts the tenement to a JSON-ish dictionary."""
-        dictionary = super().to_json(**kwargs)
-
-        if customer:
-            dictionary['customer'] = self.customer.to_json(**kwargs)
-
-        if address:
-            dictionary['address'] = self.address.to_json(**kwargs)
 
         return dictionary
