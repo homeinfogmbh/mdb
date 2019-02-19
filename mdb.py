@@ -123,53 +123,8 @@ class Address(MDBModel):
     city = CharField(64)
     state = ForeignKeyField(State, column_name='state', null=True)
 
-    def __repr__(self):
-        """Converts the Address to a one-line string."""
-        if self.po_box:
-            return '{} {}'.format(self.po_box, self.city)
-
-        if self.street:
-            street_houseno = self.street
-
-            if self.house_number:
-                street_houseno += ' ' + self.house_number
-        else:
-            street_houseno = None
-
-        if self.zip_code:
-            zip_code_city = ' '.join((self.zip_code, self.city))
-        else:
-            zip_code_city = self.city
-
-        if street_houseno:
-            return ', '.join((street_houseno, zip_code_city))
-
-        return zip_code_city
-
     def __str__(self):
-        """Converts the Address to a multi-line string."""
-        result = ''
-
-        if self.po_box:
-            result += 'Postfach {}\n'.format(self.po_box)
-        elif self.street:
-            if self.house_number:
-                result += '{} {}\n'.format(self.street, self.house_number)
-            else:
-                result += '{}\n'.format(self.street)
-
-        if self.zip_code:
-            result += '{} {}\n'.format(self.zip_code, self.city)
-
-        state = self.state
-
-        if state:
-            country_name = str(self.state.country)
-
-            if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += '{}\n'.format(country_name)
-
-        return result
+        return self.oneliner
 
     @classmethod
     def add_by_address(cls, address, state=None):
@@ -270,6 +225,56 @@ class Address(MDBModel):
 
         record.state = state
         return record
+
+    @property
+    def oneliner(self):
+        """Returns a one-liner string."""
+        if self.po_box:
+            return '{} {}'.format(self.po_box, self.city)
+
+        if self.street:
+            street_houseno = self.street
+
+            if self.house_number:
+                street_houseno += ' ' + self.house_number
+        else:
+            street_houseno = None
+
+        if self.zip_code:
+            zip_code_city = ' '.join((self.zip_code, self.city))
+        else:
+            zip_code_city = self.city
+
+        if street_houseno:
+            return ', '.join((street_houseno, zip_code_city))
+
+        return zip_code_city
+
+    @property
+    def text(self):
+        """Converts the Address to a multi-line string."""
+        result = ''
+
+        if self.po_box:
+            result += 'Postfach {}\n'.format(self.po_box)
+        elif self.street:
+            if self.house_number:
+                result += '{} {}\n'.format(self.street, self.house_number)
+            else:
+                result += '{}\n'.format(self.street)
+
+        if self.zip_code:
+            result += '{} {}\n'.format(self.zip_code, self.city)
+
+        state = self.state
+
+        if state:
+            country_name = str(self.state.country)
+
+            if country_name not in ['Deutschland', 'Germany', 'DE']:
+                result += '{}\n'.format(country_name)
+
+        return result
 
 
 class Company(MDBModel):
