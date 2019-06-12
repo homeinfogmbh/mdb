@@ -175,18 +175,21 @@ class Address(MDBModel):
 
         if po_box is None and addr is None:
             raise po_box_addr_xor_err
-        elif po_box is not None and addr is not None:
+
+        if po_box is not None and addr is not None:
             raise po_box_addr_xor_err
-        elif addr is not None:
+
+        if addr is not None:
             try:
                 street, house_number, zip_code = addr
             except ValueError:
                 raise ValueError(
                     'addr must be (street, house_number, zip_code)')
-            else:
-                address = (street, house_number, zip_code, city)
-                return cls.add_by_address(address, state=state)
-        elif po_box is not None:
+
+            address = (street, house_number, zip_code, city)
+            return cls.add_by_address(address, state=state)
+
+        if po_box is not None:
             return cls.add_by_po_box(po_box, city, state=state)
 
         raise po_box_addr_xor_err
