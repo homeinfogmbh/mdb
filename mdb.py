@@ -155,11 +155,17 @@ class Address(MDBModel):
             return address
 
     @classmethod
-    def add_by_po_box(cls, po_box, city, state=None):
+    def add_by_po_box(cls, po_box, city, district=None, state=None):
         """Adds an address by a PO box."""
         select = True if state is None else cls.state == state
         select &= Address.po_box == po_box
         select &= Address.city == city
+
+        if district is not None:
+            select &= cls.district == district
+
+        if state is not None:
+            select &= cls.state == state
 
         try:
             return Address.get(select)
@@ -167,11 +173,12 @@ class Address(MDBModel):
             address = Address()
             address.po_box = po_box
             address.city = city
+            address.district = district
             address.state = state
             return address
 
     @classmethod
-    def add(cls, city, po_box=None, addr=None, state=None):
+    def add(cls, city, po_box=None, addr=None, district=None, state=None):
         """Adds an address record to the database.
 
         Usage:
@@ -194,10 +201,11 @@ class Address(MDBModel):
                     'addr must be (street, house_number, zip_code)')
 
             address = (street, house_number, zip_code, city)
-            return cls.add_by_address(address, state=state)
+            return cls.add_by_address(address, district=district, state=state)
 
         if po_box is not None:
-            return cls.add_by_po_box(po_box, city, state=state)
+            return cls.add_by_po_box(
+                po_box, city, district=district, state=state)
 
         raise po_box_addr_xor_err
 
@@ -272,7 +280,7 @@ class Address(MDBModel):
     def oneliner(self):
         """Returns a one-liner string."""
         if self.po_box:
-            return f'{self.po_box} {self.city}'
+            return f'{self.po_box} {self.city_district}'
 
         street_houseno = self.street_houseno
         zip_code_city = self.zip_code_city
