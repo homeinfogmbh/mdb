@@ -121,20 +121,26 @@ class Address(MDBModel):
     zip_code = CharField(32, null=True)
     po_box = CharField(32, null=True)
     city = CharField(64)
+    district = CharField(64, null=True)
     state = ForeignKeyField(State, column_name='state', null=True)
 
     def __str__(self):
-        return self.oneliner
+        return self.oneliner or ''
 
     @classmethod
-    def add_by_address(cls, address, state=None):
+    def add_by_address(cls, address, district=None, state=None):
         """Adds a new address by a complete address."""
         street, house_number, zip_code, city = address
-        select = True if state is None else cls.state == state
-        select &= Address.city == city
+        select = Address.city == city
         select &= Address.street == street
         select &= Address.house_number == house_number
         select &= Address.zip_code == zip_code
+
+        if district is not None:
+            select &= cls.district == district
+
+        if state is not None:
+            select &= cls.state == state
 
         try:
             return Address.get(select)
@@ -144,6 +150,7 @@ class Address(MDBModel):
             address.street = street
             address.house_number = house_number
             address.zip_code = zip_code
+            address.district = district
             address.state = state
             return address
 
@@ -230,26 +237,48 @@ class Address(MDBModel):
         return record
 
     @property
+    def street_houseno(self):
+        """Returns street and hounse number."""
+        if self.street and self.house_number:
+            return f'{self.street} {self.house_number}'
+
+        if self.street:
+            return self.street
+
+        return None
+
+    @property
+    def city_district(self):
+        """Returns the city and district."""
+        if self.city and self.district:
+            return f'{self.city} - {self.district}'
+
+        if self.city:
+            return self.city
+
+        return None
+
+    @property
+    def zip_code_city(self):
+        """Returns ZIP code and city."""
+        city_district = self.city_district
+
+        if self.zip_code and city_district:
+            return f'{self.zip_code} {city_district}'
+
+        return city_district
+
+    @property
     def oneliner(self):
         """Returns a one-liner string."""
         if self.po_box:
-            return '{} {}'.format(self.po_box, self.city)
+            return f'{self.po_box} {self.city}'
 
-        if self.street:
-            street_houseno = self.street
+        street_houseno = self.street_houseno
+        zip_code_city = self.zip_code_city
 
-            if self.house_number:
-                street_houseno += ' ' + self.house_number
-        else:
-            street_houseno = None
-
-        if self.zip_code:
-            zip_code_city = ' '.join((self.zip_code, self.city))
-        else:
-            zip_code_city = self.city
-
-        if street_houseno:
-            return ', '.join((street_houseno, zip_code_city))
+        if street_houseno and zip_code_city:
+            return f'{street_houseno}, {zip_code_city}'
 
         return zip_code_city
 
