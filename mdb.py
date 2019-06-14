@@ -35,9 +35,9 @@ class AlreadyExists(Exception):
         record_type = type(self.record).__name__
 
         if self.keys:
-            return '{} already exists for {}.'.format(record_type, self.keys)
+            return f'{record_type} already exists for {self.keys}.'
 
-        return '{} already exists.'.format(record_type)
+        return f'{record_type} already exists.'
 
 
 class MDBModel(JSONModel):
@@ -71,10 +71,10 @@ class Country(MDBModel):
     @classmethod
     def find(cls, pattern):
         """Finds countries by patterns."""
-        pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.iso ** pattern) | (cls.name ** pattern)
-            | (cls.original_name ** pattern))
+            (cls.iso ** f'%{pattern}%')
+            | (cls.name ** f'%{pattern}%')
+            | (cls.original_name ** f'%{pattern}%'))
 
 
 class State(MDBModel):
@@ -102,15 +102,14 @@ class State(MDBModel):
             if len(pattern) == 2:
                 return cls.select().where(cls.iso == pattern)
 
-            pattern = '%{}%'.format(pattern)
-            return cls.select().where(cls.name ** pattern)
+            return cls.select().where(cls.name ** f'%{pattern}%')
 
         return cls.select().where(cls.country == country)
 
     @property
     def iso3166(self):
         """Returns the full ISO 3166-2 compliant code."""
-        return '{}-{}'.format(self.country.iso, self.iso)
+        return f'{self.country.iso}-{self.iso}'
 
 
 class Address(MDBModel):
@@ -212,11 +211,12 @@ class Address(MDBModel):
     @classmethod
     def find(cls, pattern):
         """Finds an address."""
-        pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.street ** pattern) | (cls.house_number ** pattern)
-            | (cls.zip_code ** pattern) | (cls.po_box ** pattern)
-            | (cls.city ** pattern))
+            (cls.street ** f'%{pattern}%')
+            | (cls.house_number ** f'%{pattern}%')
+            | (cls.zip_code ** f'%{pattern}%')
+            | (cls.po_box ** f'%{pattern}%')
+            | (cls.city ** f'%{pattern}%'))
 
     @classmethod
     def from_json(cls, json):
@@ -296,23 +296,23 @@ class Address(MDBModel):
         result = ''
 
         if self.po_box:
-            result += 'Postfach {}\n'.format(self.po_box)
+            result += f'Postfach {self.po_box}\n'
         elif self.street:
             if self.house_number:
-                result += '{} {}\n'.format(self.street, self.house_number)
+                result += f'{self.street} {self.house_number}\n'
             else:
-                result += '{}\n'.format(self.street)
+                result += f'{self.street}\n'
 
         if self.zip_code:
-            result += '{} {}\n'.format(self.zip_code, self.city)
+            result += f'{self.zip_code} {self.city}\n'
 
         state = self.state
 
         if state:
             country_name = str(self.state.country)
 
-            if country_name not in ['Deutschland', 'Germany', 'DE']:
-                result += '{}\n'.format(country_name)
+            if country_name not in {'Deutschland', 'Germany', 'DE'}:
+                result += f'{country_name}\n'
 
         return result
 
@@ -347,10 +347,10 @@ class Company(MDBModel):
     @classmethod
     def find(cls, pattern):
         """Finds companies by primary key or name."""
-        pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.name ** pattern) | (cls.abbreviation ** pattern)
-            | (cls.annotation ** pattern))
+            (cls.name ** f'%{pattern}%')
+            | (cls.abbreviation ** f'%{pattern}%')
+            | (cls.annotation ** f'%{pattern}%'))
 
     @property
     def departments(self):
@@ -376,8 +376,8 @@ class Department(MDBModel):
     @classmethod
     def find(cls, pattern):
         """Finds a department."""
-        pattern = '%{}%'.format(pattern)
-        return cls.select().where((cls.name ** pattern) | (cls.type * pattern))
+        return cls.select().where(
+            (cls.name ** f'%{pattern}%') | (cls.type * f'%{pattern}%'))
 
 
 class Employee(MDBModel):
@@ -406,9 +406,9 @@ class Employee(MDBModel):
     @classmethod
     def find(cls, pattern):
         """Finds an employee."""
-        pattern = '%{}%'.format(pattern)
         return cls.select().where(
-            (cls.surname ** pattern) | (cls.first_name ** pattern))
+            (cls.surname ** f'%{pattern}%')
+            | (cls.first_name ** f'%{pattern}%'))
 
 
 class Customer(MDBModel):
@@ -440,7 +440,7 @@ class Customer(MDBModel):
             cid_sel = cls.id == cid
 
         company_abbr_sel = Company.abbreviation ** pattern
-        company_name_sel = Company.name ** '%{}%'.format(pattern)
+        company_name_sel = Company.name ** f'%{pattern}%'
         return cls.select().join(Company).where(
             cid_sel | company_abbr_sel | company_name_sel)
 
