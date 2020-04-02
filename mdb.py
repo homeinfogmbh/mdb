@@ -56,8 +56,7 @@ class MDBModel(JSONModel):
 class Country(MDBModel):
     """Countries."""
 
-    # An *exactly* two characters long ISO 3166-2 country code
-    iso = CharField(2)
+    iso = CharField(2)  # ISO 3166-2 country code
     name = CharField(64)
     original_name = CharField(64, null=True, default=None)
 
@@ -83,7 +82,7 @@ class State(MDBModel):
     """States within countries."""
 
     country = ForeignKeyField(Country, column_name='country', backref='states')
-    iso = CharField(2)  # ISO 3166-2
+    iso = CharField(2)  # ISO 3166-2 state code
     name = CharField(64)
 
     def __str__(self):
