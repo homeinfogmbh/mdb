@@ -14,7 +14,8 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer']
+    'Customer'
+]
 
 
 CONFIG = loadcfg('mdb.conf')
@@ -26,7 +27,7 @@ class AlreadyExists(Exception):
 
     def __init__(self, record, **keys):
         """Sets the record and key."""
-        super().__init__((record, keys))
+        super().__init__(record, keys)
         self.record = record
         self.keys = keys
 
@@ -74,15 +75,15 @@ class Country(MDBModel):
         return cls.select().where(
             (cls.iso ** f'%{pattern}%')
             | (cls.name ** f'%{pattern}%')
-            | (cls.original_name ** f'%{pattern}%'))
+            | (cls.original_name ** f'%{pattern}%')
+        )
 
 
 class State(MDBModel):
     """States within countries."""
 
     country = ForeignKeyField(Country, column_name='country', backref='states')
-    # An *exactly* two characters long ISO 3166-2 state code.
-    iso = CharField(2)
+    iso = CharField(2)  # ISO 3166-2
     name = CharField(64)
 
     def __str__(self):
@@ -124,6 +125,7 @@ class Address(MDBModel):
     state = ForeignKeyField(State, column_name='state', null=True)
 
     def __str__(self):
+        """Returns the oneliner or an empty string."""
         return self.oneliner or ''
 
     @classmethod
@@ -216,7 +218,8 @@ class Address(MDBModel):
             | (cls.house_number ** f'%{pattern}%')
             | (cls.zip_code ** f'%{pattern}%')
             | (cls.po_box ** f'%{pattern}%')
-            | (cls.city ** f'%{pattern}%'))
+            | (cls.city ** f'%{pattern}%')
+        )
 
     @classmethod
     def from_json(cls, json):
@@ -350,7 +353,8 @@ class Company(MDBModel):
         return cls.select().where(
             (cls.name ** f'%{pattern}%')
             | (cls.abbreviation ** f'%{pattern}%')
-            | (cls.annotation ** f'%{pattern}%'))
+            | (cls.annotation ** f'%{pattern}%')
+        )
 
     @property
     def departments(self):
@@ -399,7 +403,7 @@ class Employee(MDBModel):
     def __str__(self):
         """Returns the employee's name."""
         if self.first_name is not None:
-            return ' '.join([self.first_name, self.surname])
+            return f'{self.first_name} {self.surname}'
 
         return self.surname
 
@@ -408,7 +412,8 @@ class Employee(MDBModel):
         """Finds an employee."""
         return cls.select().where(
             (cls.surname ** f'%{pattern}%')
-            | (cls.first_name ** f'%{pattern}%'))
+            | (cls.first_name ** f'%{pattern}%')
+        )
 
 
 class Customer(MDBModel):
