@@ -14,7 +14,8 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer'
+    'Customer',
+    'Tenement'
 ]
 
 
@@ -454,10 +455,30 @@ class Customer(MDBModel):
         return self.company.name
 
     def to_json(self, *, company=False, **kwargs):
-        """Converts the customer to a JSON-ish dictionary."""
-        dictionary = super().to_json(**kwargs)
+        """Converts the customer to a JSON-ish dict."""
+        json = super().to_json(**kwargs)
 
         if company:
-            dictionary['company'] = self.company.to_json(**kwargs)
+            json['company'] = self.company.to_json(**kwargs)
 
-        return dictionary
+        return json
+
+
+class Tenement(MDBModel):
+    """A customer's tenement."""
+
+    external_id = CharField(255, null=True)
+    customer = ForeignKeyField(Customer, column_name='customer')
+    address = ForeignKeyField(Address, column_name='address')
+
+    def to_json(self, *, customer=False, address=False, **kwargs):
+        """Returns a JSON-ish dict."""
+        json = super().to_json(**kwargs)
+
+        if customer:
+            json['customer'] = self.customer.to_json(**kwargs)
+
+        if address:
+            json['address'] = self.address.to_json(**kwargs)
+
+        return json
