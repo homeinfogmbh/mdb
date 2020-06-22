@@ -14,7 +14,8 @@ __all__ = [
     'Company',
     'Department',
     'Employee',
-    'Customer'
+    'Customer',
+    'Tenement'
 ]
 
 
@@ -461,3 +462,23 @@ class Customer(MDBModel):
             json['company'] = self.company.to_json(**kwargs)
 
         return json
+
+
+class Tenement(MDBModel):
+    """A tenement."""
+
+    customer = ForeignKeyField(Customer, column_name='customer')
+    address = ForeignKeyField(Address, column_name='address')
+    rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
+    living_unit = CharField(255, null=True)     # Wohneinheit / WE.
+    annotation = CharField(255, null=True)
+
+    @classmethod
+    def from_json(cls, json, customer, address, **kwargs):
+        """Returns a new tenement from a JSON-ish
+        dict for the specified customer.
+        """
+        tenement = super().from_json(json, **kwargs)
+        tenement.customer = customer
+        tenement.address = address
+        return tenement
