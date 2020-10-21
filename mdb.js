@@ -36,6 +36,7 @@ export function addressToString (address, sep = ', ', shSep = ' ', zcSep = ' ') 
 */
 export function customerToString (customer, preferAbbreviation = false, withId = true, idPrefix = '(', idSuffix = ')', sep = ' ') {
     const elements = [];
+    const customerId = []:
 
     if (preferAbbreviation)
         elements.push(customer.company.abbreviation || customer.company.name);
@@ -44,12 +45,14 @@ export function customerToString (customer, preferAbbreviation = false, withId =
 
     if (withId) {
         if (idPrefix != null)
-            elements.push(idPrefix);
+            customerId.push(idPrefix);
 
-        elements.push(customer.id);
+        customerId.push(customer.id);
 
         if (idSuffix != null)
-            elements.push(idSuffix);
+            customerId.push(idSuffix);
+
+        element.push(customerId.join(''));
     }
 
     return elements.join(sep);
