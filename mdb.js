@@ -23,14 +23,28 @@
 /*
     Returns the respective address as a one-line string.
 */
-export function addressToString (address) {
-    return address.street + ' ' + address.houseNumber + ', ' + address.zipCode + ' ' + address.city;
+export function addressToString (address, sep = ', ', shSep = ' ', zcSep = ' ') {
+    const streetHouseno = [address.street, address.houseNumber];
+    const zipCodeCity = [address.zipCode, address.city];
+    const address = [streetHouseno.join(shSep), zipCodeCity.join(zcSep)];
+    return  address.join(sep);
 }
 
 
 /*
     Returns the respective customer as a one-line string.
 */
-export function customerToString (customer) {
-    return customer.company.name  + ' (' + customer.id + ')';
+export function customerToString (customer, preferAbbreviation = false, withId = true, idPrefix = '(', idSuffix = ')') {
+    const elements;
+
+    if (preferAbbreviation)
+        elements.push(customer.company.abbreviation || customer.company.name);
+    else
+        elements.push(customer.company.name);
+
+    if (withId)
+        const customerId = [idPrefix || '', customer.id, idSuffix || ''];
+        elements.push(customerId.join(''));
+
+    return elements.join(' ');
 }
