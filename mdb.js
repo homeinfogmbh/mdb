@@ -52,7 +52,7 @@ export function customerToString (customer, preferAbbreviation = false, withId =
         if (idSuffix != null)
             customerId.push(idSuffix);
 
-        element.push(customerId.join(''));
+        elements.push(customerId.join(''));
     }
 
     return elements.join(sep);
