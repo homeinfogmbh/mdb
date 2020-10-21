@@ -26,8 +26,8 @@
 export function addressToString (address, sep = ', ', shSep = ' ', zcSep = ' ') {
     const streetHouseno = [address.street, address.houseNumber];
     const zipCodeCity = [address.zipCode, address.city];
-    const address = [streetHouseno.join(shSep), zipCodeCity.join(zcSep)];
-    return  address.join(sep);
+    const addressElements = [streetHouseno.join(shSep), zipCodeCity.join(zcSep)];
+    return  addressElements.join(sep);
 }
 
 
