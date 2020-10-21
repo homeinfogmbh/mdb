@@ -35,7 +35,7 @@ export function addressToString (address, sep = ', ', shSep = ' ', zcSep = ' ') 
     Returns the respective customer as a one-line string.
 */
 export function customerToString (customer, preferAbbreviation = false, withId = true, idPrefix = '(', idSuffix = ')') {
-    const elements;
+    const elements = [];
 
     if (preferAbbreviation)
         elements.push(customer.company.abbreviation || customer.company.name);
