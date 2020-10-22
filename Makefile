@@ -6,7 +6,7 @@ default: | pull clean install
 
 install:
 	@ ./setup.py install --record $(FILE_LIST)
-	@ install -vm 644 -t /srv/http/de/homeinfo/javascript mdb.js
+	@ install -vm 644 -t /srv/http/de/homeinfo/javascript mdb.mjs
 
 uninstall:
 	@ while read FILE; do echo "Removing: $$FILE"; rm "$$FILE"; done < $(FILE_LIST)
