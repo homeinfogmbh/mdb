@@ -1,6 +1,10 @@
 """HOMEINFO's main data database."""
 
-from peewee import ForeignKeyField, IntegerField, CharField
+from __future__ import annotations
+from logging import getLogger
+from typing import Iterable, Set, Tuple, Union
+
+from peewee import CharField, ForeignKeyField, IntegerField, Model
 
 from configlib import loadcfg
 from peeweeplus import MySQLDatabase, JSONModel
@@ -15,18 +19,22 @@ __all__ = [
     'Department',
     'Employee',
     'Customer',
-    'Tenement'
+    'Tenement',
+    'customer'
 ]
 
 
 CONFIG = loadcfg('mdb.conf')
 DATABASE = MySQLDatabase.from_config(CONFIG['db'])
+LOGGER = getLogger(__file__)
+AddrType = Tuple[str, str, str]
+AddressType = Tuple[str, str, str, str]
 
 
 class AlreadyExists(Exception):
     """Indicates that a certainr record already exists."""
 
-    def __init__(self, record, **keys):
+    def __init__(self, record: Model, **keys):
         """Sets the record and key."""
         super().__init__(record, keys)
         self.record = record
@@ -42,7 +50,7 @@ class AlreadyExists(Exception):
         return f'{record_type} already exists.'
 
 
-class MDBModel(JSONModel):
+class MDBModel(JSONModel):  # pylint: disable=R0903
     """Generic HOMEINFO MDB Model."""
 
     class Meta:     # pylint: disable=C0111,R0903
@@ -61,16 +69,16 @@ class Country(MDBModel):
     name = CharField(64)
     original_name = CharField(64, null=True, default=None)
 
-    def __str__(self):
+    def __str__(self):  # pylint: disable=E0307
         """Converts the country to a string."""
         return self.name
 
-    def __repr__(self):
+    def __repr__(self):     # pylint: disable=E0306
         """Returns the ISO code."""
         return self.iso
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Country]:
         """Finds countries by patterns."""
         return cls.select().where(
             (cls.iso ** f'%{pattern}%')
@@ -86,16 +94,16 @@ class State(MDBModel):
     iso = CharField(2)  # ISO 3166-2 state code
     name = CharField(64)
 
-    def __str__(self):
+    def __str__(self):  # pylint: disable=E0307
         """Returns the country's name."""
         return self.name
 
-    def __repr__(self):
+    def __repr__(self):     # pylint: disable=E0306
         """Returns the ISO code."""
         return self.iso
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[State]:
         """Finds a state by the provided pattern."""
         try:
             country = int(pattern)
@@ -108,7 +116,7 @@ class State(MDBModel):
         return cls.select().where(cls.country == country)
 
     @property
-    def iso3166(self):
+    def iso3166(self) -> str:
         """Returns the full ISO 3166-2 compliant code."""
         return f'{self.country.iso}-{self.iso}'
 
@@ -129,7 +137,8 @@ class Address(MDBModel):
         return self.oneliner or ''
 
     @classmethod
-    def add_by_address(cls, address, district=None, state=None):
+    def add_by_address(cls, address: AddressType, district: str = None,
+                       state: Union[State, int] = None) -> Address:
         """Adds a new address by a complete address."""
         street, house_number, zip_code, city = address
         select = Address.city == city
@@ -146,17 +155,13 @@ class Address(MDBModel):
         try:
             return Address.get(select)
         except Address.DoesNotExist:
-            address = Address()
-            address.city = city
-            address.street = street
-            address.house_number = house_number
-            address.zip_code = zip_code
-            address.district = district
-            address.state = state
-            return address
+            return Address(
+                city=city, street=street, house_number=house_number,
+                zip_code=zip_code, district=district, state=state)
 
     @classmethod
-    def add_by_po_box(cls, po_box, city, district=None, state=None):
+    def add_by_po_box(cls, po_box: str, city: str, district: str = None,
+                      state: Union[State, int] = None) -> Address:
         """Adds an address by a PO box."""
         select = True if state is None else cls.state == state
         select &= Address.po_box == po_box
@@ -171,15 +176,13 @@ class Address(MDBModel):
         try:
             return Address.get(select)
         except Address.DoesNotExist:
-            address = Address()
-            address.po_box = po_box
-            address.city = city
-            address.district = district
-            address.state = state
-            return address
+            return Address(
+                po_box=po_box, city=city, district=district, state=state)
 
     @classmethod
-    def add(cls, city, po_box=None, addr=None, district=None, state=None):
+    def add(    # pylint: disable=R0913
+            cls, city: str, po_box: str = None, addr: AddrType = None,
+            district: str = None, state: Union[State, int] = None) -> Address:
         """Adds an address record to the database.
 
         Usage:
@@ -198,8 +201,7 @@ class Address(MDBModel):
             try:
                 street, house_number, zip_code = addr
             except ValueError:
-                raise ValueError(
-                    'addr must be (street, house_number, zip_code)')
+                raise ValueError(f'addr must be of type {AddrType}') from None
 
             address = (street, house_number, zip_code, city)
             return cls.add_by_address(address, district=district, state=state)
@@ -211,7 +213,7 @@ class Address(MDBModel):
         raise po_box_addr_xor_err
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Address]:
         """Finds an address."""
         return cls.select().where(
             (cls.street ** f'%{pattern}%')
@@ -222,7 +224,7 @@ class Address(MDBModel):
         )
 
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: dict) -> Address:
         """Returns an address from the respective dictionary."""
         state = json.pop('state', None)
         record = super().from_json(json)
@@ -239,7 +241,7 @@ class Address(MDBModel):
             try:
                 state, *ambiguous = State.find(state)
             except ValueError:
-                raise State.DoesNotExist()
+                raise State.DoesNotExist() from None
 
             if ambiguous:
                 raise ValueError('Ambiguous state.')
@@ -248,7 +250,7 @@ class Address(MDBModel):
         return record
 
     @property
-    def street_houseno(self):
+    def street_houseno(self) -> Union[str, None]:
         """Returns street and hounse number."""
         if self.street and self.house_number:
             return f'{self.street} {self.house_number}'
@@ -259,7 +261,7 @@ class Address(MDBModel):
         return None
 
     @property
-    def city_district(self):
+    def city_district(self) -> Union[str, None]:
         """Returns the city and district."""
         if self.city and self.district:
             return f'{self.city} - {self.district}'
@@ -270,7 +272,7 @@ class Address(MDBModel):
         return None
 
     @property
-    def zip_code_city(self):
+    def zip_code_city(self) -> Union[str, None]:
         """Returns ZIP code and city."""
         city_district = self.city_district
 
@@ -280,7 +282,7 @@ class Address(MDBModel):
         return city_district
 
     @property
-    def oneliner(self):
+    def oneliner(self) -> Union[str, None]:
         """Returns a one-liner string."""
         if self.po_box:
             return f'{self.po_box} {self.city_district}'
@@ -291,10 +293,10 @@ class Address(MDBModel):
         if street_houseno and zip_code_city:
             return f'{street_houseno}, {zip_code_city}'
 
-        return zip_code_city
+        return zip_code_city or street_houseno
 
     @property
-    def text(self):
+    def text(self) -> str:
         """Converts the Address to a multi-line string."""
         result = ''
 
@@ -328,27 +330,26 @@ class Company(MDBModel):
     address = ForeignKeyField(Address, column_name='address', null=True)
     annotation = CharField(256, null=True)
 
-    def __str__(self):
+    def __str__(self):  # pylint: disable=E0307
         """Returns the company's name."""
         return self.name
 
     @classmethod
-    def add(cls, name, abbreviation=None, address=None, annotation=None):
+    def add(cls, name: str, abbreviation: str = None,
+            address: Union[Address, int] = None,
+            annotation: str = None) -> Company:
         """Adds a new company."""
         try:
             company = cls.get(cls.name == name)
         except cls.DoesNotExist:
-            company = cls()
-            company.name = name
-            company.abbreviation = abbreviation
-            company.address = address
-            company.annotation = annotation
-            return company
+            return cls(
+                name=name, abbreviation=abbreviation, address=address,
+                annotation=annotation)
 
         raise AlreadyExists(company, name=name)
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Company]:
         """Finds companies by primary key or name."""
         return cls.select().where(
             (cls.name ** f'%{pattern}%')
@@ -357,7 +358,7 @@ class Company(MDBModel):
         )
 
     @property
-    def departments(self):
+    def departments(self) -> Set[Department]:
         """Returns the company's departments."""
         departments = set()
 
@@ -373,12 +374,12 @@ class Department(MDBModel):
     name = CharField(64)
     type = CharField(64, null=True)
 
-    def __str__(self):
+    def __str__(self):  # pylint: disable=E0307
         """Returns the department's name."""
         return self.name
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Department]:
         """Finds a department."""
         return cls.select().where(
             (cls.name ** f'%{pattern}%') | (cls.type * f'%{pattern}%'))
@@ -408,7 +409,7 @@ class Employee(MDBModel):
         return self.surname
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Employee]:
         """Finds an employee."""
         return cls.select().where(
             (cls.surname ** f'%{pattern}%')
@@ -435,26 +436,24 @@ class Customer(MDBModel):
         return str(self.id)
 
     @classmethod
-    def find(cls, pattern):
+    def find(cls, pattern: str) -> Iterable[Customer]:
         """Finds a customer by the provided pattern."""
         try:
             cid = int(pattern)
-        except (TypeError, ValueError):
-            cid_sel = False
+        except ValueError:
+            condition = Company.abbreviation ** pattern
+            condition |= Company.name ** f'%{pattern}%'
         else:
-            cid_sel = cls.id == cid
+            condition = Customer.id == cid
 
-        company_abbr_sel = Company.abbreviation ** pattern
-        company_name_sel = Company.name ** f'%{pattern}%'
-        return cls.select().join(Company).where(
-            cid_sel | company_abbr_sel | company_name_sel)
+        return cls.select().join(Company).where(condition)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the customer's name."""
         return self.company.name
 
-    def to_json(self, *, company=False, **kwargs):
+    def to_json(self, *, company: bool = False, **kwargs) -> dict:
         """Converts the customer to a JSON-ish dict."""
         json = super().to_json(**kwargs)
 
@@ -464,7 +463,7 @@ class Customer(MDBModel):
         return json
 
 
-class Tenement(MDBModel):
+class Tenement(MDBModel):   # pylint: disable=R0903
     """A tenement."""
 
     customer = ForeignKeyField(Customer, column_name='customer')
@@ -474,7 +473,9 @@ class Tenement(MDBModel):
     annotation = CharField(255, null=True)
 
     @classmethod
-    def from_json(cls, json, customer, address, **kwargs):
+    def from_json(  # pylint: disable=W0621
+            cls, json: dict, customer: Union[Customer, int],
+            address: Union[Address, int], **kwargs) -> Tenement:
         """Returns a new tenement from a JSON-ish
         dict for the specified customer.
         """
@@ -482,3 +483,17 @@ class Tenement(MDBModel):
         tenement.customer = customer
         tenement.address = address
         return tenement
+
+
+def customer(string: str) -> Customer:
+    """Returns the first matched Customer."""
+
+    try:
+        first, *ambiguous = Customer.find(string)
+    except ValueError:
+        raise ValueError('No such customer.') from None
+
+    for customer in ambiguous:  # pylint: disable=W0621
+        LOGGER.warning('Found ambiguous customer: %s', customer)
+
+    return first
