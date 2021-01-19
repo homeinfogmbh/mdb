@@ -90,7 +90,8 @@ class Country(MDBModel):
 class State(MDBModel):
     """States within countries."""
 
-    country = ForeignKeyField(Country, column_name='country', backref='states')
+    country = ForeignKeyField(
+        Country, column_name='country', backref='states', lazy_load=False)
     iso = CharField(2)  # ISO 3166-2 state code
     name = CharField(64)
 
@@ -130,7 +131,8 @@ class Address(MDBModel):
     po_box = CharField(32, null=True)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = ForeignKeyField(State, column_name='state', null=True)
+    state = ForeignKeyField(
+        State, column_name='state', null=True, lazy_load=False)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
@@ -327,7 +329,8 @@ class Company(MDBModel):
 
     name = CharField(255)
     abbreviation = CharField(16, null=True, default=None)
-    address = ForeignKeyField(Address, column_name='address', null=True)
+    address = ForeignKeyField(
+        Address, column_name='address', null=True, lazy_load=False)
     annotation = CharField(256, null=True)
 
     def __str__(self):  # pylint: disable=E0307
@@ -389,9 +392,9 @@ class Employee(MDBModel):
     """Employees."""
 
     company = ForeignKeyField(
-        Company, column_name='company', backref='employees')
+        Company, column_name='company', backref='employees', lazy_load=False)
     department = ForeignKeyField(
-        Department, column_name='department', backref='staff')
+        Department, column_name='department', backref='staff', lazy_load=False)
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
@@ -399,7 +402,8 @@ class Employee(MDBModel):
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
-    address = ForeignKeyField(Address, column_name='address', null=True)
+    address = ForeignKeyField(
+        Address, column_name='address', null=True, lazy_load=False)
 
     def __str__(self):
         """Returns the employee's name."""
@@ -422,9 +426,10 @@ class Customer(MDBModel):
 
     id = IntegerField(primary_key=True)
     company = ForeignKeyField(
-        Company, column_name='company', backref='customers')
+        Company, column_name='company', backref='customers', lazy_load=False)
     reseller = ForeignKeyField(
-        'self', column_name='reseller', backref='resellees', null=True)
+        'self', column_name='reseller', backref='resellees', null=True,
+        lazy_load=False)
     annotation = CharField(255, null=True, default=None)
 
     def __str__(self):
@@ -466,8 +471,9 @@ class Customer(MDBModel):
 class Tenement(MDBModel):   # pylint: disable=R0903
     """A tenement."""
 
-    customer = ForeignKeyField(Customer, column_name='customer')
-    address = ForeignKeyField(Address, column_name='address')
+    customer = ForeignKeyField(
+        Customer, column_name='customer', lazy_load=False)
+    address = ForeignKeyField(Address, column_name='address', lazy_load=False)
     rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
     living_unit = CharField(255, null=True)     # Wohneinheit / WE.
     annotation = CharField(255, null=True)
