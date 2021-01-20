@@ -92,7 +92,7 @@ def _add_find_parsers(subparsers: _SubParsersAction):
     """Adds parsers for the find command."""
 
     parser = subparsers.add_parser('find', help='find database records')
-    subparsers = parser.add_subparsers(title='table')
+    subparsers = parser.add_subparsers(dest='table')
     _add_find_address_parser(subparsers)
     _add_find_company_parser(subparsers)
     _add_find_country_parser(subparsers)
@@ -107,6 +107,6 @@ def get_args() -> Namespace:
     """Parses the command line arguments."""
 
     parser = ArgumentParser(description='Main database management utility.')
-    subparsers = parser.add_subparsers(title='action')
+    subparsers = parser.add_subparsers(dest='action')
     _add_find_parsers(subparsers)
     return parser.parse_args()
