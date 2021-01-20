@@ -22,7 +22,7 @@ setup(
     packages=['mdb', 'mdb.mgr'],
     entry_points={
         'console_scripts': [
-            'mdbmgr = mdb.mdbmgr:main'
+            'mdbmgr = mdb.mgr:main'
         ]
     },
     description='HOMEINFO Master Database ORM.'
