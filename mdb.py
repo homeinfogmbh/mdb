@@ -4,7 +4,12 @@ from __future__ import annotations
 from logging import getLogger
 from typing import Iterable, Set, Tuple, Union
 
-from peewee import CharField, ForeignKeyField, IntegerField, Model
+from peewee import JOIN
+from peewee import CharField
+from peewee import ForeignKeyField
+from peewee import IntegerField
+from peewee import Model
+from peewee import ModelSelect
 
 from configlib import loadcfg
 from peeweeplus import MySQLDatabase, JSONModel
@@ -80,11 +85,10 @@ class Country(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> Iterable[Country]:
         """Finds countries by patterns."""
-        return cls.select().where(
-            (cls.iso ** f'%{pattern}%')
-            | (cls.name ** f'%{pattern}%')
-            | (cls.original_name ** f'%{pattern}%')
-        )
+        condition = cls.iso ** f'%{pattern}%'
+        condition |= cls.name ** f'%{pattern}%'
+        condition |= cls.original_name ** f'%{pattern}%'
+        return cls.select().where(condition)
 
 
 class State(MDBModel):
@@ -104,17 +108,19 @@ class State(MDBModel):
         return self.iso
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[State]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds a state by the provided pattern."""
+        select = cls.select(cls, Country).join(Country)
+
         try:
             country = int(pattern)
         except ValueError:
             if len(pattern) == 2:
-                return cls.select().where(cls.iso == pattern)
+                return select.where(cls.iso == pattern)
 
-            return cls.select().where(cls.name ** f'%{pattern}%')
+            return select.where(cls.name ** f'%{pattern}%')
 
-        return cls.select().where(cls.country == country)
+        return select.where(cls.country == country)
 
     @property
     def iso3166(self) -> str:
@@ -215,15 +221,17 @@ class Address(MDBModel):
         raise po_box_addr_xor_err
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Address]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
-        return cls.select().where(
-            (cls.street ** f'%{pattern}%')
-            | (cls.house_number ** f'%{pattern}%')
-            | (cls.zip_code ** f'%{pattern}%')
-            | (cls.po_box ** f'%{pattern}%')
-            | (cls.city ** f'%{pattern}%')
-        )
+        select = cls.select(cls, State, Country).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER)
+        condition = cls.street ** f'%{pattern}%'
+        condition |= cls.house_number ** f'%{pattern}%'
+        condition |= cls.zip_code ** f'%{pattern}%'
+        condition |= cls.po_box ** f'%{pattern}%'
+        condition |= cls.city ** f'%{pattern}%'
+        return select.where(condition)
 
     @classmethod
     def from_json(cls, json: dict) -> Address:
@@ -313,9 +321,7 @@ class Address(MDBModel):
         if self.zip_code:
             result += f'{self.zip_code} {self.city}\n'
 
-        state = self.state
-
-        if state:
+        if self.state:
             country_name = str(self.state.country)
 
             if country_name not in {'Deutschland', 'Germany', 'DE'}:
@@ -352,13 +358,19 @@ class Company(MDBModel):
         raise AlreadyExists(company, name=name)
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Company]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds companies by primary key or name."""
-        return cls.select().where(
-            (cls.name ** f'%{pattern}%')
-            | (cls.abbreviation ** f'%{pattern}%')
-            | (cls.annotation ** f'%{pattern}%')
+        select = cls.select(cls, Address, State, Country).join(
+            Address, join_type=JOIN.LEFT_OUTER
+        ).join(
+            State, join_type=JOIN.LEFT_OUTER
+        ).join(
+            Country, join_type=JOIN.LEFT_OUTER
         )
+        condition = cls.name ** f'%{pattern}%'
+        condition |= cls.abbreviation ** f'%{pattern}%'
+        condition |= cls.annotation ** f'%{pattern}%'
+        return select.where(condition)
 
     @property
     def departments(self) -> Set[Department]:
@@ -382,10 +394,11 @@ class Department(MDBModel):
         return self.name
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Department]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds a department."""
-        return cls.select().where(
-            (cls.name ** f'%{pattern}%') | (cls.type * f'%{pattern}%'))
+        condition = cls.name ** f'%{pattern}%'
+        condition |= cls.type * f'%{pattern}%'
+        return cls.select().where(condition)
 
 
 class Employee(MDBModel):
@@ -413,12 +426,23 @@ class Employee(MDBModel):
         return self.surname
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Employee]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds an employee."""
-        return cls.select().where(
-            (cls.surname ** f'%{pattern}%')
-            | (cls.first_name ** f'%{pattern}%')
+        personal_address = Address.alias()
+        select = cls.select(
+            cls, Company, Address, State, Country, Department,
+            personal_address).join(
+            Company).join(
+            Address, join_type=JOIN.LEFT_OUTER).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER
+        ).join_from(cls, Department).join_from(
+            cls, personal_address, on=cls.address == personal_address.id,
+            join_type=JOIN.LEFT_OUTER
         )
+        condition = cls.surname ** f'%{pattern}%'
+        condition |= cls.first_name ** f'%{pattern}%'
+        return select.where(condition)
 
 
 class Customer(MDBModel):
@@ -441,8 +465,15 @@ class Customer(MDBModel):
         return str(self.id)
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Customer]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds a customer by the provided pattern."""
+        select = cls.select(cls, Company, Address, State, Country).join(
+            Company).join(
+            Address, join_type=JOIN.LEFT_OUTER).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER
+        )
+
         try:
             cid = int(pattern)
         except ValueError:
@@ -451,7 +482,7 @@ class Customer(MDBModel):
         else:
             condition = Customer.id == cid
 
-        return cls.select().join(Company).where(condition)
+        return select.where(condition)
 
     @property
     def name(self) -> str:
