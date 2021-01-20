@@ -1,22 +1,21 @@
 """HOMEINFO's main data database."""
 
 from __future__ import annotations
-from logging import getLogger
-from typing import Iterable, Set, Tuple, Union
+from typing import Iterable, Optional, Set, Union
 
 from peewee import JOIN
 from peewee import CharField
 from peewee import ForeignKeyField
 from peewee import IntegerField
-from peewee import Model
 from peewee import ModelSelect
 
-from configlib import loadcfg
-from peeweeplus import MySQLDatabase, JSONModel
+from peeweeplus import JSONModel
 
+from mdb.config import DATABASE
+from mdb.exceptions import AlreadyExists
+from mdb.types import LongAddress, ShortAddress
 
 __all__ = [
-    'AlreadyExists',
     'Country',
     'State',
     'Address',
@@ -24,35 +23,8 @@ __all__ = [
     'Department',
     'Employee',
     'Customer',
-    'Tenement',
-    'customer'
+    'Tenement'
 ]
-
-
-CONFIG = loadcfg('mdb.conf')
-DATABASE = MySQLDatabase.from_config(CONFIG['db'])
-LOGGER = getLogger(__file__)
-AddrType = Tuple[str, str, str]
-AddressType = Tuple[str, str, str, str]
-
-
-class AlreadyExists(Exception):
-    """Indicates that a certainr record already exists."""
-
-    def __init__(self, record: Model, **keys):
-        """Sets the record and key."""
-        super().__init__(record, keys)
-        self.record = record
-        self.keys = keys
-
-    def __str__(self):
-        """Prints record and keys."""
-        record_type = type(self.record).__name__
-
-        if self.keys:
-            return f'{record_type} already exists for {self.keys}.'
-
-        return f'{record_type} already exists.'
 
 
 class MDBModel(JSONModel):  # pylint: disable=R0903
@@ -145,7 +117,7 @@ class Address(MDBModel):
         return self.oneliner or ''
 
     @classmethod
-    def add_by_address(cls, address: AddressType, district: str = None,
+    def add_by_address(cls, address: LongAddress, district: str = None,
                        state: Union[State, int] = None) -> Address:
         """Adds a new address by a complete address."""
         street, house_number, zip_code, city = address
@@ -189,8 +161,9 @@ class Address(MDBModel):
 
     @classmethod
     def add(    # pylint: disable=R0913
-            cls, city: str, po_box: str = None, addr: AddrType = None,
-            district: str = None, state: Union[State, int] = None) -> Address:
+            cls, city: str, po_box: Optional[str] = None,
+            addr: Optional[ShortAddress] = None, district: str = None,
+            state: Union[State, int] = None) -> Address:
         """Adds an address record to the database.
 
         Usage:
@@ -206,13 +179,8 @@ class Address(MDBModel):
             raise po_box_addr_xor_err
 
         if addr is not None:
-            try:
-                street, house_number, zip_code = addr
-            except ValueError:
-                raise ValueError(f'addr must be of type {AddrType}') from None
-
-            address = (street, house_number, zip_code, city)
-            return cls.add_by_address(address, district=district, state=state)
+            return cls.add_by_address(
+                (*addr, city), district=district, state=state)
 
         if po_box is not None:
             return cls.add_by_po_box(
@@ -520,17 +488,3 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         tenement.customer = customer
         tenement.address = address
         return tenement
-
-
-def customer(string: str) -> Customer:
-    """Returns the first matched Customer."""
-
-    try:
-        first, *ambiguous = Customer.find(string)
-    except ValueError:
-        raise ValueError('No such customer.') from None
-
-    for customer in ambiguous:  # pylint: disable=W0621
-        LOGGER.warning('Found ambiguous customer: %s', customer)
-
-    return first
