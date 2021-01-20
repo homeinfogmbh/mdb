@@ -20,7 +20,6 @@ setup(
     maintainer='Richard Neumann',
     maintainer_email='r.neumann@homeinfo.de',
     packages=['mdb', 'mdb.mgr'],
-    scripts=['files/mdbmgr'],
     entry_points={
         'console_scripts': [
             'mdbmgr = mdb.mdbmgr:main'
