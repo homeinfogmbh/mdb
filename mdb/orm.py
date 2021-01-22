@@ -82,17 +82,24 @@ class State(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds a state by the provided pattern."""
-        select = cls.select(cls, Country).join(Country)
-
         try:
             country = int(pattern)
         except ValueError:
             if len(pattern) == 2:
-                return select.where(cls.iso == pattern)
+                return cls.select(cascade=True).where(cls.iso == pattern)
 
-            return select.where(cls.name ** f'%{pattern}%')
+            return cls.select(cascade=True).where(cls.name ** f'%{pattern}%')
 
-        return select.where(cls.country == country)
+        return cls.select(cascade=True).where(cls.country == country)
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects states."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, Country, *args}
+        return super().select(*args, **kwargs).join(Country)
 
     @property
     def iso3166(self) -> str:
@@ -191,15 +198,12 @@ class Address(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
-        select = cls.select(cls, State, Country).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER)
         condition = cls.street ** f'%{pattern}%'
         condition |= cls.house_number ** f'%{pattern}%'
         condition |= cls.zip_code ** f'%{pattern}%'
         condition |= cls.po_box ** f'%{pattern}%'
         condition |= cls.city ** f'%{pattern}%'
-        return select.where(condition)
+        return cls.select(cascade=True).where(condition)
 
     @classmethod
     def from_json(cls, json: dict) -> Address:
@@ -226,6 +230,18 @@ class Address(MDBModel):
 
         record.state = state
         return record
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects addresses."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, State, Country, *args}
+        return super().select(*args, **kwargs).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER)
+
 
     @property
     def street_houseno(self) -> Union[str, None]:
@@ -328,17 +344,25 @@ class Company(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds companies by primary key or name."""
-        select = cls.select(cls, Address, State, Country).join(
+        condition = cls.name ** f'%{pattern}%'
+        condition |= cls.abbreviation ** f'%{pattern}%'
+        condition |= cls.annotation ** f'%{pattern}%'
+        return cls.select(cascade=True).where(condition)
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects companies."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, Address, State, Country, *args}
+        return super().select(*args, **kwargs).join(
             Address, join_type=JOIN.LEFT_OUTER
         ).join(
             State, join_type=JOIN.LEFT_OUTER
         ).join(
             Country, join_type=JOIN.LEFT_OUTER
         )
-        condition = cls.name ** f'%{pattern}%'
-        condition |= cls.abbreviation ** f'%{pattern}%'
-        condition |= cls.annotation ** f'%{pattern}%'
-        return select.where(condition)
 
     @property
     def departments(self) -> Set[Department]:
@@ -396,10 +420,22 @@ class Employee(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an employee."""
+        condition = cls.surname ** f'%{pattern}%'
+        condition |= cls.first_name ** f'%{pattern}%'
+        return cls.select(cascade=True).where(condition)
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects employees."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
         personal_address = Address.alias()
-        select = cls.select(
+        args = {
             cls, Company, Address, State, Country, Department,
-            personal_address).join(
+            personal_address, *args
+        }
+        return super().select(*args, **kwargs).join(
             Company).join(
             Address, join_type=JOIN.LEFT_OUTER).join(
             State, join_type=JOIN.LEFT_OUTER).join(
@@ -408,9 +444,6 @@ class Employee(MDBModel):
             cls, personal_address, on=cls.address == personal_address.id,
             join_type=JOIN.LEFT_OUTER
         )
-        condition = cls.surname ** f'%{pattern}%'
-        condition |= cls.first_name ** f'%{pattern}%'
-        return select.where(condition)
 
 
 class Customer(MDBModel):
@@ -435,13 +468,6 @@ class Customer(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds a customer by the provided pattern."""
-        select = cls.select(cls, Company, Address, State, Country).join(
-            Company).join(
-            Address, join_type=JOIN.LEFT_OUTER).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER
-        )
-
         try:
             cid = int(pattern)
         except ValueError:
@@ -450,7 +476,21 @@ class Customer(MDBModel):
         else:
             condition = Customer.id == cid
 
-        return select.where(condition)
+        return cls.select(cascade=True).where(condition)
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects customers."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, Company, Address, State, Country, *args}
+        return super().select(*args, **kwargs).join(
+            Company).join(
+            Address, join_type=JOIN.LEFT_OUTER).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER
+        )
 
     @property
     def name(self) -> str:
@@ -488,3 +528,17 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         tenement.customer = customer
         tenement.address = address
         return tenement
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects tenements."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, Customer, Company, Address, State, Country, *args}
+        return super().select(*args, **kwargs).join(
+            Customer).join(Company).join(
+            Address, join_type=JOIN.LEFT_OUTER).join(
+            State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER
+        )
