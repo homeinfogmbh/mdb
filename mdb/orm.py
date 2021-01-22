@@ -535,10 +535,17 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         if not cascade:
             return super().select(*args, **kwargs)
 
-        args = {cls, Customer, Company, Address, State, Country, *args}
+        customer_address = Address.alias()
+        customer_state = State.alias()
+        customer_country = Country.alias()
+        args = {
+            cls, Customer, customer_address, customer_state, customer_country,
+            Company, Address, State, Country, *args
+        }
         return super().select(*args, **kwargs).join(
             Customer).join(Company).join(
-            Address, join_type=JOIN.LEFT_OUTER).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER
-        )
+            cls, customer_address, join_type=JOIN.LEFT_OUTER).join(
+            customer_state, join_type=JOIN.LEFT_OUTER).join(
+            customer_country, join_type=JOIN.LEFT_OUTER).join_from(
+            cls, Address).join(State, join_type=JOIN.LEFT_OUTER).join(
+            Country, join_type=JOIN.LEFT_OUTER)
