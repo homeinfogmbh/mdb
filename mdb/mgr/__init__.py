@@ -14,4 +14,4 @@ def main() -> None:
 
     if args.action == 'find':
         for record in find_recods(args):
-            print(record)
+            print(*record.to_csv(), sep='\t')
