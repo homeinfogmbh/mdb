@@ -576,7 +576,7 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             Company, Address, State, Country, *args
         }
         return super().select(*args, **kwargs).join(
-            Customer).join(Company).join(
+            Customer).join(Company).join_from(
             cls, customer_address, join_type=JOIN.LEFT_OUTER).join(
             customer_state, join_type=JOIN.LEFT_OUTER).join(
             customer_country, join_type=JOIN.LEFT_OUTER).join_from(
