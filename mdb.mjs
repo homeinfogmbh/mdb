@@ -102,7 +102,7 @@ export class Customer {
             result = this.name;
 
         if (withId)
-            return result  + ' (' + this.id + ')';
+            return result + ' (' + this.id + ')';
 
         return result;
     }
