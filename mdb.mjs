@@ -1,5 +1,5 @@
 /*
-    mdb.js - Library for MDB data structures.
+    mdb.mjs - Library for MDB data structures.
 
     (C) 2020 HOMEINFO - Digitale Informationssysteme GmbH
 
@@ -20,40 +20,73 @@
 */
 'use strict';
 
+
 /*
-    Returns the respective address as a one-line string.
+    Represents an address.
 */
-export function addressToString (address, sep = ', ', shSep = ' ', zcSep = ' ') {
-    const streetHouseno = [address.street, address.houseNumber];
-    const zipCodeCity = [address.zipCode, address.city];
-    const addressElements = [streetHouseno.join(shSep), zipCodeCity.join(zcSep)];
-    return  addressElements.join(sep);
+export class Address {
+    constructor (street, houseNumber, zipCode, city) {
+        this.street = street;
+        this.houseNumber = houseNumber;
+        this.zipCode = zipCode;
+        this.city = city;
+    }
+
+    static fromJSON (json) {
+        return new this(json.street, json.houseNumber, json.zipCode, json.city);
+    }
+
+    get streetHouseNumber () {
+        return [this.street, this.houseNumber].join(' ');
+    }
+
+    get zipCodeCity () {
+        return [this.zipCode, this.city].join(' ');
+    }
+
+    toString () {
+        return [this.streetHouseNumber, this.zipCodeCity].join(', ');
+    }
 }
 
 
 /*
-    Returns the respective customer as a one-line string.
+    Represents a customer.
 */
-export function customerToString (customer, preferAbbreviation = false, withId = true, idPrefix = '(', idSuffix = ')', sep = ' ') {
-    const elements = [];
-    const customerId = [];
-
-    if (preferAbbreviation)
-        elements.push(customer.company.abbreviation || customer.company.name);
-    else
-        elements.push(customer.company.name);
-
-    if (withId) {
-        if (idPrefix != null)
-            customerId.push(idPrefix);
-
-        customerId.push(customer.id);
-
-        if (idSuffix != null)
-            customerId.push(idSuffix);
-
-        elements.push(customerId.join(''));
+export class Customer {
+    constructor (id, name, abbreviation) {
+        this.id = id
+        this.name = name;
+        this.abbreviation = abbreviation;
     }
 
-    return elements.join(sep);
+    static fromJSON (json) {
+        return new this(json.id, json.company.name, json.company.abbreviation);
+    }
+
+    toString (preferAbbreviation = false, withId = true) {
+        const name = this.abbreviation ? preferAbbreviation : this.name;
+
+        if (withId)
+            return name  + '(' + this.id + ')';
+
+        return name;
+    }
+}
+
+
+/*
+    Converts a JSON object representing an address into a one-line string.
+*/
+export function addressToString (address) {
+    return Address.fromJSON(address).toString();
+}
+
+
+/*
+    Converts a JSON object representing a customer into a one-line string.
+*/
+export function customerToString (customer, preferAbbreviation = false, withId = true) {
+    return Customer.fromJSON(customer).toString(preferAbbreviation, withId);
+
 }
