@@ -94,12 +94,17 @@ export class Customer {
     }
 
     toString (preferAbbreviation = false, withId = true) {
-        const name = this.abbreviation ? preferAbbreviation : this.name;
+        let result;
+
+        if (preferAbbreviation)
+            result = this.abbreviation || this.name;
+        else
+            result = this.name;
 
         if (withId)
-            return name  + ' (' + this.id + ')';
+            return result  + ' (' + this.id + ')';
 
-        return name;
+        return result;
     }
 }
 
