@@ -1,7 +1,7 @@
 """HOMEINFO's main data database."""
 
 from __future__ import annotations
-from typing import Iterable, Optional, Set, Tuple, Union
+from typing import Optional, Set, Tuple, Union
 
 from peewee import JOIN
 from peewee import CharField
@@ -55,7 +55,7 @@ class Country(MDBModel):
         return self.iso
 
     @classmethod
-    def find(cls, pattern: str) -> Iterable[Country]:
+    def find(cls, pattern: str) -> ModelSelect:
         """Finds countries by patterns."""
         condition = cls.iso ** f'%{pattern}%'
         condition |= cls.name ** f'%{pattern}%'
@@ -249,7 +249,6 @@ class Address(MDBModel):
         return super().select(*args, **kwargs).join(
             State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
-
 
     @property
     def street_houseno(self) -> Union[str, None]:
