@@ -93,7 +93,7 @@ export class Customer {
         const name = this.abbreviation ? preferAbbreviation : this.name;
 
         if (withId)
-            return name  + '(' + this.id + ')';
+            return name  + ' (' + this.id + ')';
 
         return name;
     }
