@@ -89,6 +89,10 @@ export class Customer {
         return this.company.abbreviation;
     }
 
+    get address () {
+        return this.company.address;
+    }
+
     toString (preferAbbreviation = false, withId = true) {
         const name = this.abbreviation ? preferAbbreviation : this.name;
 
