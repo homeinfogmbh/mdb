@@ -51,17 +51,42 @@ export class Address {
 
 
 /*
-    Represents a customer.
+    Represents a company.
 */
-export class Customer {
-    constructor (id, name, abbreviation) {
-        this.id = id
+export class Company {
+    constructor (id, name, abbreviation, address) {
+        this.id = id;
         this.name = name;
         this.abbreviation = abbreviation;
+        this.address = address;
     }
 
     static fromJSON (json) {
-        return new this(json.id, json.company.name, json.company.abbreviation);
+        return new this(json.id, json.name, json.abbreviation, address);
+    }
+}
+
+
+/*
+    Represents a customer.
+*/
+export class Customer {
+    constructor (id, company) {
+        this.id = id
+        this.company;
+    }
+
+    static fromJSON (json) {
+        const company = Company.fromJSON(json.company);
+        return new this(json.id, company);
+    }
+
+    get name () {
+        return this.company.name;
+    }
+
+    get abbreviation () {
+        return this.company.abbreviation;
     }
 
     toString (preferAbbreviation = false, withId = true) {
@@ -88,5 +113,4 @@ export function addressToString (address) {
 */
 export function customerToString (customer, preferAbbreviation = false, withId = true) {
     return Customer.fromJSON(customer).toString(preferAbbreviation, withId);
-
 }
