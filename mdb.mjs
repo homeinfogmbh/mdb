@@ -54,7 +54,7 @@ export class Address {
     Represents a company.
 */
 export class Company {
-    constructor (id, name, abbreviation, address) {
+    constructor (id, name, abbreviation = null, address = null) {
         this.id = id;
         this.name = name;
         this.abbreviation = abbreviation;
@@ -62,6 +62,7 @@ export class Company {
     }
 
     static fromJSON (json) {
+        const address = (json.address == null) ? null : Address.fromJSON(json.address);
         return new this(json.id, json.name, json.abbreviation, address);
     }
 }
