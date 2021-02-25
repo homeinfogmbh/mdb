@@ -74,7 +74,7 @@ export class Company {
 export class Customer {
     constructor (id, company) {
         this.id = id
-        this.company;
+        this.company = company;
     }
 
     static fromJSON (json) {
