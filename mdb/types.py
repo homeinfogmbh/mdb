@@ -1,10 +1,23 @@
 """Common type hints."""
 
-from typing import Tuple
+from typing import NamedTuple
 
 
 __all__ = ['LongAddress', 'ShortAddress']
 
 
-LongAddress = Tuple[str, str, str, str]
-ShortAddress = Tuple[str, str, str]
+class LongAddress(NamedTuple):
+    """A long address."""
+
+    street: str
+    house_number: str
+    zip_code: str
+    city: str
+
+
+class ShortAddress(NamedTuple):
+    """A short address."""
+
+    street: str
+    house_number: str
+    zip_code: str
