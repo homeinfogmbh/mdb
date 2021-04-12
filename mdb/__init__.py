@@ -10,6 +10,8 @@ from mdb.orm import Employee
 from mdb.orm import State
 from mdb.orm import Tenement
 from mdb.parsers import customer
+from mdb.types import LongAddress, ShortAddress
+
 
 __all__ = [
     'AlreadyExists',
@@ -21,5 +23,7 @@ __all__ = [
     'Employee',
     'Customer',
     'Tenement',
+    'LongAddress',
+    'ShortAddress',
     'customer'
 ]
