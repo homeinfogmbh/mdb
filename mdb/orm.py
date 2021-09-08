@@ -12,7 +12,7 @@ from peewee import ModelSelect
 from peeweeplus import JSONModel
 
 from mdb.config import DATABASE
-from mdb.exceptions import AlreadyExists
+from mdb.exceptions import PO_BOX_XOR_ADDR, AlreadyExists
 from mdb.types import LongAddress, ShortAddress
 
 __all__ = [
@@ -185,13 +185,11 @@ class Address(MDBModel):
             * Add address with either po_box or addr parameter.
             * addr must be a tuple: (<street>, <house_number>, <zip_code>).
         """
-        po_box_addr_xor_err = ValueError('Must specify either po_box or addr')
-
         if po_box is None and addr is None:
-            raise po_box_addr_xor_err
+            raise PO_BOX_XOR_ADDR
 
         if po_box is not None and addr is not None:
-            raise po_box_addr_xor_err
+            raise PO_BOX_XOR_ADDR
 
         if addr is not None:
             return cls.add_by_address(
@@ -201,7 +199,7 @@ class Address(MDBModel):
             return cls.add_by_po_box(
                 po_box, city, district=district, state=state)
 
-        raise po_box_addr_xor_err
+        raise PO_BOX_XOR_ADDR
 
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
