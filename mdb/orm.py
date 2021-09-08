@@ -1,7 +1,7 @@
 """HOMEINFO's main data database."""
 
 from __future__ import annotations
-from typing import Optional, Set, Tuple, Union
+from typing import Optional, Union
 
 from peewee import JOIN
 from peewee import CharField
@@ -62,7 +62,7 @@ class Country(MDBModel):
         condition |= cls.original_name ** f'%{pattern}%'
         return cls.select().where(condition)
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.iso, self.name, self.original_name)
 
@@ -110,7 +110,7 @@ class State(MDBModel):
         """Returns the full ISO 3166-2 compliant code."""
         return f'{self.country.iso}-{self.iso}'
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.country_id, self.iso, self.name)
 
@@ -320,7 +320,7 @@ class Address(MDBModel):
 
         return result
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.street, self.house_number, self.zip_code,
                 self.po_box, self.city, self.district, self.state_id)
@@ -377,7 +377,7 @@ class Company(MDBModel):
         )
 
     @property
-    def departments(self) -> Set[Department]:
+    def departments(self) -> set[Department]:
         """Returns the company's departments."""
         departments = set()
 
@@ -386,7 +386,7 @@ class Company(MDBModel):
 
         return departments
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.name, self.abbreviation, self.address_id,
                 self.annotation)
@@ -409,7 +409,7 @@ class Department(MDBModel):
         condition |= cls.type * f'%{pattern}%'
         return cls.select().where(condition)
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.name, self.type)
 
@@ -466,7 +466,7 @@ class Employee(MDBModel):
             join_type=JOIN.LEFT_OUTER
         )
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.company_id, self.department_id, self.first_name,
                 self.surname, self.phone, self.cellphone, self.email,
@@ -533,7 +533,7 @@ class Customer(MDBModel):
 
         return json
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.company.id, self.company.name, self.reseller_id,
                 self.annotation)
@@ -582,7 +582,7 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             cls, Address).join(State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.customer_id, self.address_id, self.rental_unit,
                 self.living_unit, self.annotation)
