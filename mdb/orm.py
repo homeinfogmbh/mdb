@@ -297,26 +297,26 @@ class Address(MDBModel):
     @property
     def text(self) -> str:
         """Converts the Address to a multi-line string."""
-        result = ''
+        lines = []
 
         if self.po_box:
-            result += f'Postfach {self.po_box}\n'
+            lines.append(f'Postfach {self.po_box}')
         elif self.street:
             if self.house_number:
-                result += f'{self.street} {self.house_number}\n'
+                lines.append(f'{self.street} {self.house_number}')
             else:
-                result += f'{self.street}\n'
+                lines.append(f'{self.street}')
 
         if self.zip_code:
-            result += f'{self.zip_code} {self.city}\n'
+            lines.append(f'{self.zip_code} {self.city}')
 
         if self.state:
             country_name = str(self.state.country)
 
             if country_name not in {'Deutschland', 'Germany', 'DE'}:
-                result += f'{country_name}\n'
+                lines.append(f'{country_name}')
 
-        return result
+        return '\n'.join(lines)
 
     def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
