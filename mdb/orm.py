@@ -44,7 +44,7 @@ class Country(MDBModel):
 
     iso = CharField(2)  # ISO 3166-2 country code
     name = CharField(64)
-    original_name = CharField(64, null=True, default=None)
+    original_name = CharField(64, null=True)
 
     def __str__(self):  # pylint: disable=E0307
         """Converts the country to a string."""
@@ -328,7 +328,7 @@ class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
-    abbreviation = CharField(16, null=True, default=None)
+    abbreviation = CharField(16, null=True)
     address = ForeignKeyField(
         Address, column_name='address', null=True, lazy_load=False)
     annotation = CharField(256, null=True)
@@ -480,7 +480,7 @@ class Customer(MDBModel):
     reseller = ForeignKeyField(
         'self', column_name='reseller', backref='resellees', null=True,
         lazy_load=False)
-    annotation = CharField(255, null=True, default=None)
+    annotation = CharField(255, null=True)
 
     def __str__(self):
         """Returns the customer's full name."""
