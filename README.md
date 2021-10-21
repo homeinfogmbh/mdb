@@ -19,5 +19,5 @@ on how to use the models in respect to database queries.
 
 ## Dependencies
 * [*peewee*](https://github.com/coleifer/peewee "peewee is a small, expressive ORM")
-* [*configlib*](configlib "Extended config file parser")
-* [*peeweeplus*](peeweeplus "Practical extensions for @coleifer's small, expressive ORM")
+* [*configlib*](https://github.com/homeinfogmbh/configlib "Extended config file parser")
+* [*peeweeplus*](https://github.com/homeinfogmbh/peeweeplus "Practical extensions for @coleifer's small, expressive ORM")
