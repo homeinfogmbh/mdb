@@ -73,8 +73,8 @@ class Country(MDBModel):
 class State(MDBModel):
     """States within countries."""
 
-    country = ForeignKeyField(
-        Country, column_name='country', backref='states', lazy_load=False)
+    country = ForeignKeyField(Country, column_name='country', lazy_load=False,
+                              backref='states')
     iso = CharField(2)  # ISO 3166-2 state code
     name = CharField(64)
 
@@ -247,8 +247,8 @@ class Company(MDBModel):
 
     name = CharField(255)
     abbreviation = CharField(16, null=True)
-    address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False)
+    address = ForeignKeyField(Address, column_name='address', null=True,
+                              lazy_load=False)
     annotation = CharField(256, null=True)
 
     def __str__(self):  # pylint: disable=E0307
@@ -333,10 +333,10 @@ class Department(MDBModel):
 class Employee(MDBModel):
     """Employees."""
 
-    company = ForeignKeyField(
-        Company, column_name='company', backref='employees', lazy_load=False)
-    department = ForeignKeyField(
-        Department, column_name='department', backref='staff', lazy_load=False)
+    company = ForeignKeyField(Company, column_name='company',
+                              backref='employees', lazy_load=False)
+    department = ForeignKeyField(Department, column_name='department',
+                                 backref='staff', lazy_load=False)
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
@@ -344,8 +344,8 @@ class Employee(MDBModel):
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
-    address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False)
+    address = ForeignKeyField(Address, column_name='address', null=True,
+                              lazy_load=False)
 
     def __str__(self):
         """Returns the employee's name."""
@@ -393,11 +393,10 @@ class Customer(MDBModel):
     """CRM's customer(s)."""
 
     id = IntegerField(primary_key=True)
-    company = ForeignKeyField(
-        Company, column_name='company', backref='customers', lazy_load=False)
-    reseller = ForeignKeyField(
-        'self', column_name='reseller', backref='resellees', null=True,
-        lazy_load=False)
+    company = ForeignKeyField(Company, column_name='company', lazy_load=False,
+                              backref='customers')
+    reseller = ForeignKeyField('self', column_name='reseller', lazy_load=False,
+                               null=True, backref='resellees')
     annotation = CharField(255, null=True)
 
     def __str__(self):
@@ -458,8 +457,8 @@ class Customer(MDBModel):
 class Tenement(MDBModel):   # pylint: disable=R0903
     """A tenement."""
 
-    customer = ForeignKeyField(
-        Customer, column_name='customer', lazy_load=False)
+    customer = ForeignKeyField(Customer, column_name='customer',
+                               lazy_load=False)
     address = ForeignKeyField(Address, column_name='address', lazy_load=False)
     rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
     living_unit = CharField(255, null=True)     # Wohneinheit / WE.
