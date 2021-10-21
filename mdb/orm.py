@@ -580,7 +580,7 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             cls, Address).join(State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
 
-    def to_csv(self) -> tuple[str]:
+    def to_csv(self) -> tuple[Union[int, str]]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.customer_id, self.address_id, self.rental_unit,
                 self.living_unit, self.annotation)
