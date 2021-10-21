@@ -3,10 +3,7 @@
 from peewee import Model
 
 
-__all__ = ['PO_BOX_XOR_ADDR', 'AlreadyExists']
-
-
-PO_BOX_XOR_ADDR = ValueError('Must specify either po_box or addr.')
+__all__ = ['AlreadyExists']
 
 
 class AlreadyExists(Exception):

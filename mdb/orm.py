@@ -1,7 +1,7 @@
 """HOMEINFO's main data database."""
 
 from __future__ import annotations
-from typing import Optional, Union
+from typing import Iterator, Optional, Union
 
 from peewee import JOIN
 from peewee import CharField
@@ -12,8 +12,7 @@ from peewee import ModelSelect
 from peeweeplus import JSONModel
 
 from mdb.config import DATABASE
-from mdb.exceptions import PO_BOX_XOR_ADDR, AlreadyExists
-from mdb.types import LongAddress, ShortAddress
+from mdb.exceptions import AlreadyExists
 
 __all__ = [
     'Country',
@@ -25,6 +24,9 @@ __all__ = [
     'Customer',
     'Tenement'
 ]
+
+
+GERMANY = {'Deutschland', 'Germany', 'DE'}
 
 
 class MDBModel(JSONModel):  # pylint: disable=R0903
@@ -57,10 +59,11 @@ class Country(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds countries by patterns."""
-        condition = cls.iso ** f'%{pattern}%'
-        condition |= cls.name ** f'%{pattern}%'
-        condition |= cls.original_name ** f'%{pattern}%'
-        return cls.select().where(condition)
+        return cls.select().where(
+            (cls.iso ** (pattern := f'%{pattern}%'))
+            | (cls.name ** pattern)
+            | (cls.original_name ** pattern)
+        )
 
     def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
@@ -121,25 +124,26 @@ class Address(MDBModel):
     street = CharField(64, null=True)
     house_number = CharField(8, null=True)
     zip_code = CharField(32, null=True)
-    po_box = CharField(32, null=True)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = ForeignKeyField(
-        State, column_name='state', null=True, lazy_load=False)
+    state = ForeignKeyField(State, column_name='state', null=True,
+                            lazy_load=False)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
         return self.oneliner or ''
 
     @classmethod
-    def add_by_address(cls, address: LongAddress, district: str = None,
-                       state: Union[State, int] = None) -> Address:
-        """Adds a new address by a complete address."""
-        street, house_number, zip_code, city = address
-        select = Address.city == city
-        select &= Address.street == street
-        select &= Address.house_number == house_number
-        select &= Address.zip_code == zip_code
+    def add(cls, street: str, house_number: str, zip_code: str, city: str, *,
+            state: Optional[Union[State, int]] = None,
+            district: Optional[str] = None) -> Address:
+        """Adds an address record to the database."""
+        select = (
+            (Address.street == street)
+            & (Address.house_number == house_number)
+            & (Address.zip_code == zip_code)
+            & (Address.city == city)
+        )
 
         if district is not None:
             select &= cls.district == district
@@ -154,87 +158,32 @@ class Address(MDBModel):
                 city=city, street=street, house_number=house_number,
                 zip_code=zip_code, district=district, state=state)
 
-    @classmethod
-    def add_by_po_box(cls, po_box: str, city: str, district: str = None,
-                      state: Union[State, int] = None) -> Address:
-        """Adds an address by a PO box."""
-        select = True if state is None else cls.state == state
-        select &= Address.po_box == po_box
-        select &= Address.city == city
-
-        if district is not None:
-            select &= cls.district == district
-
-        if state is not None:
-            select &= cls.state == state
-
-        try:
-            return Address.get(select)
-        except Address.DoesNotExist:
-            return Address(
-                po_box=po_box, city=city, district=district, state=state)
-
-    @classmethod
-    def add(    # pylint: disable=R0913
-            cls, city: str, po_box: Optional[str] = None,
-            addr: Optional[ShortAddress] = None, district: str = None,
-            state: Union[State, int] = None) -> Address:
-        """Adds an address record to the database.
-
-        Usage:
-            * Add address with either po_box or addr parameter.
-            * addr must be a tuple: (<street>, <house_number>, <zip_code>).
-        """
-        if po_box is None and addr is None:
-            raise PO_BOX_XOR_ADDR
-
-        if po_box is not None and addr is not None:
-            raise PO_BOX_XOR_ADDR
-
-        if addr is not None:
-            return cls.add_by_address(
-                (*addr, city), district=district, state=state)
-
-        if po_box is not None:
-            return cls.add_by_po_box(
-                po_box, city, district=district, state=state)
-
-        raise PO_BOX_XOR_ADDR
 
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
-        condition = cls.street ** f'%{pattern}%'
-        condition |= cls.house_number ** f'%{pattern}%'
-        condition |= cls.zip_code ** f'%{pattern}%'
-        condition |= cls.po_box ** f'%{pattern}%'
-        condition |= cls.city ** f'%{pattern}%'
-        return cls.select(cascade=True).where(condition)
+        return cls.select(cascade=True).where(
+            (cls.street ** (pattern := f'%{pattern}%'))
+            | (cls.house_number ** pattern)
+            | (cls.zip_code ** pattern)
+            | (cls.city ** pattern)
+        )
 
     @classmethod
     def from_json(cls, json: dict) -> Address:
         """Returns an address from the respective dictionary."""
         state = json.pop('state', None)
         record = super().from_json(json)
-        addr = (record.street, record.house_number, record.zip_code)
-
-        if all(addr) and not record.po_box:
-            pass
-        elif not any(addr) and record.po_box:
-            pass
-        else:
-            raise ValueError('Must specify either poBox or addr.')
 
         if state is not None:
             try:
-                state, *ambiguous = State.find(state)
+                record.state, *ambiguous = State.find(state)
             except ValueError:
                 raise State.DoesNotExist() from None
 
             if ambiguous:
                 raise ValueError('Ambiguous state.')
 
-        record.state = state
         return record
 
     @classmethod
@@ -243,85 +192,54 @@ class Address(MDBModel):
         if not cascade:
             return super().select(*args, **kwargs)
 
-        args = {cls, State, Country, *args}
-        return super().select(*args, **kwargs).join(
+        return super().select(cls, State, Country, *args, **kwargs).join(
             State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
 
     @property
-    def street_houseno(self) -> Union[str, None]:
+    def street_houseno(self) -> str:
         """Returns street and hounse number."""
-        if self.street and self.house_number:
-            return f'{self.street} {self.house_number}'
-
-        if self.street:
-            return self.street
-
-        return None
+        return f'{self.street} {self.house_number}'
 
     @property
-    def city_district(self) -> Union[str, None]:
+    def city_district(self) -> str:
         """Returns the city and district."""
-        if self.city and self.district:
+        if self.district:
             return f'{self.city} - {self.district}'
 
-        if self.city:
-            return self.city
-
-        return None
+        return self.city
 
     @property
-    def zip_code_city(self) -> Union[str, None]:
+    def zip_code_city(self) -> str:
         """Returns ZIP code and city."""
-        city_district = self.city_district
-
-        if self.zip_code and city_district:
-            return f'{self.zip_code} {city_district}'
-
-        return city_district
+        return f'{self.zip_code} {self.city_district}'
 
     @property
-    def oneliner(self) -> Union[str, None]:
+    def oneliner(self) -> str:
         """Returns a one-liner string."""
-        if self.po_box:
-            return f'{self.po_box} {self.city_district}'
+        return f'{self.street_houseno}, {self.zip_code_city}'
 
-        street_houseno = self.street_houseno
-        zip_code_city = self.zip_code_city
+    @property
+    def lines(self) -> Iterator[str]:
+        """Yields lines for multi-line representation."""
+        yield self.street_houseno
+        yield self.zip_code_city
 
-        if street_houseno and zip_code_city:
-            return f'{street_houseno}, {zip_code_city}'
+        if not self.state:
+            return
 
-        return zip_code_city or street_houseno
+        if (country := self.state.country.name) not in GERMANY:
+            yield country
 
     @property
     def text(self) -> str:
         """Converts the Address to a multi-line string."""
-        lines = []
-
-        if self.po_box:
-            lines.append(f'Postfach {self.po_box}')
-        elif self.street:
-            if self.house_number:
-                lines.append(f'{self.street} {self.house_number}')
-            else:
-                lines.append(f'{self.street}')
-
-        if self.zip_code:
-            lines.append(f'{self.zip_code} {self.city}')
-
-        if self.state:
-            country_name = str(self.state.country)
-
-            if country_name not in {'Deutschland', 'Germany', 'DE'}:
-                lines.append(f'{country_name}')
-
-        return '\n'.join(lines)
+        return '\n'.join(self.lines)
 
     def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.street, self.house_number, self.zip_code,
-                self.po_box, self.city, self.district, self.state_id)
+                self.city, self.district, self.state_id)
 
 
 class Company(MDBModel):
