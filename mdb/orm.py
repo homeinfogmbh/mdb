@@ -121,9 +121,9 @@ class State(MDBModel):
 class Address(MDBModel):
     """Address data."""
 
-    street = CharField(64, null=True)
-    house_number = CharField(8, null=True)
-    zip_code = CharField(32, null=True)
+    street = CharField(64)
+    house_number = CharField(8)
+    zip_code = CharField(32)
     city = CharField(64)
     district = CharField(64, null=True)
     state = ForeignKeyField(State, column_name='state', null=True,
