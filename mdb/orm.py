@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-DATABASE = MySQLDatabaseProxy('mdb.conf')
+DATABASE = MySQLDatabaseProxy('mdb')
 GERMANY = {'Deutschland', 'Germany', 'DE'}
 
 
