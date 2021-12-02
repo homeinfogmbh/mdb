@@ -1,7 +1,7 @@
 """HOMEINFO's main data database."""
 
 from __future__ import annotations
-from typing import Optional, Set, Tuple, Union
+from typing import Iterator, Optional, Union
 
 from peewee import JOIN
 from peewee import CharField
@@ -12,7 +12,6 @@ from peewee import ModelSelect
 from peeweeplus import JSONModel, MySQLDatabaseProxy
 
 from mdb.exceptions import AlreadyExists
-from mdb.types import LongAddress, ShortAddress
 
 
 __all__ = [
@@ -29,6 +28,7 @@ __all__ = [
 
 
 DATABASE = MySQLDatabaseProxy('mdb.conf')
+GERMANY = {'Deutschland', 'Germany', 'DE'}
 
 
 class MDBModel(JSONModel):  # pylint: disable=R0903
@@ -48,7 +48,7 @@ class Country(MDBModel):
 
     iso = CharField(2)  # ISO 3166-2 country code
     name = CharField(64)
-    original_name = CharField(64, null=True, default=None)
+    original_name = CharField(64, null=True)
 
     def __str__(self):  # pylint: disable=E0307
         """Converts the country to a string."""
@@ -61,12 +61,13 @@ class Country(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds countries by patterns."""
-        condition = cls.iso ** f'%{pattern}%'
-        condition |= cls.name ** f'%{pattern}%'
-        condition |= cls.original_name ** f'%{pattern}%'
-        return cls.select().where(condition)
+        return cls.select().where(
+            (cls.iso ** (pattern := f'%{pattern}%'))
+            | (cls.name ** pattern)
+            | (cls.original_name ** pattern)
+        )
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.iso, self.name, self.original_name)
 
@@ -74,8 +75,8 @@ class Country(MDBModel):
 class State(MDBModel):
     """States within countries."""
 
-    country = ForeignKeyField(
-        Country, column_name='country', backref='states', lazy_load=False)
+    country = ForeignKeyField(Country, column_name='country', lazy_load=False,
+                              backref='states')
     iso = CharField(2)  # ISO 3166-2 state code
     name = CharField(64)
 
@@ -114,7 +115,7 @@ class State(MDBModel):
         """Returns the full ISO 3166-2 compliant code."""
         return f'{self.country.iso}-{self.iso}'
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.country_id, self.iso, self.name)
 
@@ -122,28 +123,29 @@ class State(MDBModel):
 class Address(MDBModel):
     """Address data."""
 
-    street = CharField(64, null=True)
-    house_number = CharField(8, null=True)
-    zip_code = CharField(32, null=True)
-    po_box = CharField(32, null=True)
+    street = CharField(64)
+    house_number = CharField(8)
+    zip_code = CharField(32)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = ForeignKeyField(
-        State, column_name='state', null=True, lazy_load=False)
+    state = ForeignKeyField(State, column_name='state', null=True,
+                            lazy_load=False)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
         return self.oneliner or ''
 
     @classmethod
-    def add_by_address(cls, address: LongAddress, district: str = None,
-                       state: Union[State, int] = None) -> Address:
-        """Adds a new address by a complete address."""
-        street, house_number, zip_code, city = address
-        select = Address.city == city
-        select &= Address.street == street
-        select &= Address.house_number == house_number
-        select &= Address.zip_code == zip_code
+    def add(cls, street: str, house_number: str, zip_code: str, city: str, *,
+            state: Optional[Union[State, int]] = None,
+            district: Optional[str] = None) -> Address:
+        """Adds an address record to the database."""
+        select = (
+            (Address.street == street)
+            & (Address.house_number == house_number)
+            & (Address.zip_code == zip_code)
+            & (Address.city == city)
+        )
 
         if district is not None:
             select &= cls.district == district
@@ -158,89 +160,32 @@ class Address(MDBModel):
                 city=city, street=street, house_number=house_number,
                 zip_code=zip_code, district=district, state=state)
 
-    @classmethod
-    def add_by_po_box(cls, po_box: str, city: str, district: str = None,
-                      state: Union[State, int] = None) -> Address:
-        """Adds an address by a PO box."""
-        select = True if state is None else cls.state == state
-        select &= Address.po_box == po_box
-        select &= Address.city == city
-
-        if district is not None:
-            select &= cls.district == district
-
-        if state is not None:
-            select &= cls.state == state
-
-        try:
-            return Address.get(select)
-        except Address.DoesNotExist:
-            return Address(
-                po_box=po_box, city=city, district=district, state=state)
-
-    @classmethod
-    def add(    # pylint: disable=R0913
-            cls, city: str, po_box: Optional[str] = None,
-            addr: Optional[ShortAddress] = None, district: str = None,
-            state: Union[State, int] = None) -> Address:
-        """Adds an address record to the database.
-
-        Usage:
-            * Add address with either po_box or addr parameter.
-            * addr must be a tuple: (<street>, <house_number>, <zip_code>).
-        """
-        po_box_addr_xor_err = ValueError('Must specify either po_box or addr')
-
-        if po_box is None and addr is None:
-            raise po_box_addr_xor_err
-
-        if po_box is not None and addr is not None:
-            raise po_box_addr_xor_err
-
-        if addr is not None:
-            return cls.add_by_address(
-                (*addr, city), district=district, state=state)
-
-        if po_box is not None:
-            return cls.add_by_po_box(
-                po_box, city, district=district, state=state)
-
-        raise po_box_addr_xor_err
 
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
-        condition = cls.street ** f'%{pattern}%'
-        condition |= cls.house_number ** f'%{pattern}%'
-        condition |= cls.zip_code ** f'%{pattern}%'
-        condition |= cls.po_box ** f'%{pattern}%'
-        condition |= cls.city ** f'%{pattern}%'
-        return cls.select(cascade=True).where(condition)
+        return cls.select(cascade=True).where(
+            (cls.street ** (pattern := f'%{pattern}%'))
+            | (cls.house_number ** pattern)
+            | (cls.zip_code ** pattern)
+            | (cls.city ** pattern)
+        )
 
     @classmethod
     def from_json(cls, json: dict) -> Address:
         """Returns an address from the respective dictionary."""
         state = json.pop('state', None)
         record = super().from_json(json)
-        addr = (record.street, record.house_number, record.zip_code)
-
-        if all(addr) and not record.po_box:
-            pass
-        elif not any(addr) and record.po_box:
-            pass
-        else:
-            raise ValueError('Must specify either poBox or addr.')
 
         if state is not None:
             try:
-                state, *ambiguous = State.find(state)
+                record.state, *ambiguous = State.find(state)
             except ValueError:
                 raise State.DoesNotExist() from None
 
             if ambiguous:
                 raise ValueError('Ambiguous state.')
 
-        record.state = state
         return record
 
     @classmethod
@@ -249,94 +194,63 @@ class Address(MDBModel):
         if not cascade:
             return super().select(*args, **kwargs)
 
-        args = {cls, State, Country, *args}
-        return super().select(*args, **kwargs).join(
+        return super().select(cls, State, Country, *args, **kwargs).join(
             State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
 
     @property
-    def street_houseno(self) -> Union[str, None]:
+    def street_houseno(self) -> str:
         """Returns street and hounse number."""
-        if self.street and self.house_number:
-            return f'{self.street} {self.house_number}'
-
-        if self.street:
-            return self.street
-
-        return None
+        return f'{self.street} {self.house_number}'
 
     @property
-    def city_district(self) -> Union[str, None]:
+    def city_district(self) -> str:
         """Returns the city and district."""
-        if self.city and self.district:
+        if self.district:
             return f'{self.city} - {self.district}'
 
-        if self.city:
-            return self.city
-
-        return None
+        return self.city
 
     @property
-    def zip_code_city(self) -> Union[str, None]:
+    def zip_code_city(self) -> str:
         """Returns ZIP code and city."""
-        city_district = self.city_district
-
-        if self.zip_code and city_district:
-            return f'{self.zip_code} {city_district}'
-
-        return city_district
+        return f'{self.zip_code} {self.city_district}'
 
     @property
-    def oneliner(self) -> Union[str, None]:
+    def oneliner(self) -> str:
         """Returns a one-liner string."""
-        if self.po_box:
-            return f'{self.po_box} {self.city_district}'
+        return f'{self.street_houseno}, {self.zip_code_city}'
 
-        street_houseno = self.street_houseno
-        zip_code_city = self.zip_code_city
+    @property
+    def lines(self) -> Iterator[str]:
+        """Yields lines for multi-line representation."""
+        yield self.street_houseno
+        yield self.zip_code_city
 
-        if street_houseno and zip_code_city:
-            return f'{street_houseno}, {zip_code_city}'
+        if not self.state:
+            return
 
-        return zip_code_city or street_houseno
+        if (country := self.state.country.name) not in GERMANY:
+            yield country
 
     @property
     def text(self) -> str:
         """Converts the Address to a multi-line string."""
-        result = ''
+        return '\n'.join(self.lines)
 
-        if self.po_box:
-            result += f'Postfach {self.po_box}\n'
-        elif self.street:
-            if self.house_number:
-                result += f'{self.street} {self.house_number}\n'
-            else:
-                result += f'{self.street}\n'
-
-        if self.zip_code:
-            result += f'{self.zip_code} {self.city}\n'
-
-        if self.state:
-            country_name = str(self.state.country)
-
-            if country_name not in {'Deutschland', 'Germany', 'DE'}:
-                result += f'{country_name}\n'
-
-        return result
-
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.street, self.house_number, self.zip_code,
-                self.po_box, self.city, self.district, self.state_id)
+                self.city, self.district, self.state_id)
 
 
 class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
-    abbreviation = CharField(16, null=True, default=None)
-    address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False)
+    abbreviation = CharField(16, null=True)
+    address = ForeignKeyField(Address, column_name='address', null=True,
+                              lazy_load=False)
     annotation = CharField(256, null=True)
 
     def __str__(self):  # pylint: disable=E0307
@@ -381,7 +295,7 @@ class Company(MDBModel):
         )
 
     @property
-    def departments(self) -> Set[Department]:
+    def departments(self) -> set[Department]:
         """Returns the company's departments."""
         departments = set()
 
@@ -390,7 +304,7 @@ class Company(MDBModel):
 
         return departments
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.name, self.abbreviation, self.address_id,
                 self.annotation)
@@ -413,7 +327,7 @@ class Department(MDBModel):
         condition |= cls.type * f'%{pattern}%'
         return cls.select().where(condition)
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.name, self.type)
 
@@ -421,10 +335,10 @@ class Department(MDBModel):
 class Employee(MDBModel):
     """Employees."""
 
-    company = ForeignKeyField(
-        Company, column_name='company', backref='employees', lazy_load=False)
-    department = ForeignKeyField(
-        Department, column_name='department', backref='staff', lazy_load=False)
+    company = ForeignKeyField(Company, column_name='company',
+                              backref='employees', lazy_load=False)
+    department = ForeignKeyField(Department, column_name='department',
+                                 backref='staff', lazy_load=False)
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
@@ -432,8 +346,8 @@ class Employee(MDBModel):
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
-    address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False)
+    address = ForeignKeyField(Address, column_name='address', null=True,
+                              lazy_load=False)
 
     def __str__(self):
         """Returns the employee's name."""
@@ -470,7 +384,7 @@ class Employee(MDBModel):
             join_type=JOIN.LEFT_OUTER
         )
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.company_id, self.department_id, self.first_name,
                 self.surname, self.phone, self.cellphone, self.email,
@@ -481,12 +395,11 @@ class Customer(MDBModel):
     """CRM's customer(s)."""
 
     id = IntegerField(primary_key=True)
-    company = ForeignKeyField(
-        Company, column_name='company', backref='customers', lazy_load=False)
-    reseller = ForeignKeyField(
-        'self', column_name='reseller', backref='resellees', null=True,
-        lazy_load=False)
-    annotation = CharField(255, null=True, default=None)
+    company = ForeignKeyField(Company, column_name='company', lazy_load=False,
+                              backref='customers')
+    reseller = ForeignKeyField('self', column_name='reseller', lazy_load=False,
+                               null=True, backref='resellees')
+    annotation = CharField(255, null=True)
 
     def __str__(self):
         """Returns the customer's full name."""
@@ -537,7 +450,7 @@ class Customer(MDBModel):
 
         return json
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.company.id, self.company.name, self.reseller_id,
                 self.annotation)
@@ -546,8 +459,8 @@ class Customer(MDBModel):
 class Tenement(MDBModel):   # pylint: disable=R0903
     """A tenement."""
 
-    customer = ForeignKeyField(
-        Customer, column_name='customer', lazy_load=False)
+    customer = ForeignKeyField(Customer, column_name='customer',
+                               lazy_load=False)
     address = ForeignKeyField(Address, column_name='address', lazy_load=False)
     rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
     living_unit = CharField(255, null=True)     # Wohneinheit / WE.
@@ -586,7 +499,7 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             cls, Address).join(State, join_type=JOIN.LEFT_OUTER).join(
             Country, join_type=JOIN.LEFT_OUTER)
 
-    def to_csv(self) -> Tuple[str]:
+    def to_csv(self) -> tuple[Union[int, str]]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.customer_id, self.address_id, self.rental_unit,
                 self.living_unit, self.annotation)
