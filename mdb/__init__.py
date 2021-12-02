@@ -1,8 +1,8 @@
 """HOMEINFO's main database."""
 
 from mdb.exceptions import AlreadyExists
-from mdb.orm import Address
 from mdb.orm import DATABASE
+from mdb.orm import Address
 from mdb.orm import Company
 from mdb.orm import Country
 from mdb.orm import Customer
