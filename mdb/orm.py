@@ -9,13 +9,14 @@ from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import ModelSelect
 
-from peeweeplus import JSONModel
+from peeweeplus import JSONModel, MySQLDatabaseProxy
 
-from mdb.config import DATABASE
 from mdb.exceptions import AlreadyExists
 from mdb.types import LongAddress, ShortAddress
 
+
 __all__ = [
+    'DATABASE',
     'Country',
     'State',
     'Address',
@@ -25,6 +26,9 @@ __all__ = [
     'Customer',
     'Tenement'
 ]
+
+
+DATABASE = MySQLDatabaseProxy('mdb.conf')
 
 
 class MDBModel(JSONModel):  # pylint: disable=R0903
