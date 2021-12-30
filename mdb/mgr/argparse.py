@@ -29,15 +29,6 @@ def _add_find_company_parser(subparsers: _SubParsersAction):
     parser.add_argument('-a', '--annotation', metavar='text')
 
 
-def _add_find_country_parser(subparsers: _SubParsersAction):
-    """Adds a parser to find country records."""
-
-    parser = subparsers.add_parser('country', help='find countries')
-    parser.add_argument('-i', '--iso', metavar='ISO_3166-2')
-    parser.add_argument('-n', '--name', metavar='name')
-    parser.add_argument('-o', '--native-name', metavar='native_name')
-
-
 def _add_find_customer_parser(subparsers: _SubParsersAction):
     """Adds a parser to find customers."""
 
@@ -68,15 +59,6 @@ def _add_find_employee_parser(subparsers: _SubParsersAction):
     parser.add_argument('-A', '--address', type=int, metavar='ID')
 
 
-def _add_find_state_parser(subparsers: _SubParsersAction):
-    """Adds a parser to find states."""
-
-    parser = subparsers.add_parser('state', help='find states')
-    parser.add_argument('-C', '--country', type=int, metavar='ID')
-    parser.add_argument('-i', '--iso', metavar='ISO_3166-2')
-    parser.add_argument('-n', '--name', metavar='name')
-
-
 def _add_find_tenement_parser(subparsers: _SubParsersAction):
     """Adds a parser to find tenements."""
 
@@ -95,11 +77,9 @@ def _add_find_parsers(subparsers: _SubParsersAction):
     subparsers = parser.add_subparsers(dest='table')
     _add_find_address_parser(subparsers)
     _add_find_company_parser(subparsers)
-    _add_find_country_parser(subparsers)
     _add_find_customer_parser(subparsers)
     _add_find_department_parser(subparsers)
     _add_find_employee_parser(subparsers)
-    _add_find_state_parser(subparsers)
     _add_find_tenement_parser(subparsers)
 
 

@@ -6,11 +6,9 @@ from peewee import ModelSelect
 
 from mdb.orm import Address
 from mdb.orm import Company
-from mdb.orm import Country
 from mdb.orm import Customer
 from mdb.orm import Department
 from mdb.orm import Employee
-from mdb.orm import State
 from mdb.orm import Tenement
 
 
@@ -40,9 +38,6 @@ def find_addresses(args: Namespace) -> ModelSelect:
     if args.district is not None:
         condition &= Address.district ** f'%{args.district}%'
 
-    if args.state is not None:
-        condition &= Address.state == args.state
-
     return Address.select().where(condition)
 
 
@@ -64,23 +59,6 @@ def find_companies(args: Namespace) -> ModelSelect:
         condition &= Company.annotation ** f'%{args.annotation}%'
 
     return Company.select().where(condition)
-
-
-def find_countries(args: Namespace) -> ModelSelect:
-    """Finds countries."""
-
-    condition = True
-
-    if args.iso is not None:
-        condition &= Country.iso == args.iso
-
-    if args.name is not None:
-        condition &= Country.name ** f'%{args.name}%'
-
-    if args.native_name is not None:
-        condition &= Country.original_name ** f'%{args.native_name}%'
-
-    return Country.select().where(condition)
 
 
 def find_customers(args: Namespace) -> ModelSelect:
@@ -143,23 +121,6 @@ def find_employees(args: Namespace) -> ModelSelect:
     return Employee.select().where(condition)
 
 
-def find_states(args: Namespace) -> ModelSelect:
-    """Finds states."""
-
-    condition = True
-
-    if args.country is not None:
-        condition &= State.country == args.country
-
-    if args.iso is not None:
-        condition &= State.iso == args.iso
-
-    if args.name is not None:
-        condition &= State.name ** f'%{args.name}%'
-
-    return State.select().where(condition)
-
-
 def find_tenements(args: Namespace) -> ModelSelect:
     """Finds tenements."""
 
@@ -192,9 +153,6 @@ def find_recods(args: Namespace) -> ModelSelect:    # pylint: disable=R0911
     if args.table == 'company':
         return find_companies(args)
 
-    if args.table == 'country':
-        return find_countries(args)
-
     if args.table == 'customer':
         return find_customers(args)
 
@@ -203,9 +161,6 @@ def find_recods(args: Namespace) -> ModelSelect:    # pylint: disable=R0911
 
     if args.table == 'employee':
         return find_employees(args)
-
-    if args.table == 'state':
-        return find_states(args)
 
     if args.table == 'tenement':
         return find_tenements(args)
