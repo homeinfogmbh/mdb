@@ -9,15 +9,14 @@ from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import ModelSelect
 
-from peeweeplus import JSONModel, MySQLDatabaseProxy
+from peeweeplus import EnumField, JSONModel, MySQLDatabaseProxy
 
+from mdb.enumerations import State
 from mdb.exceptions import AlreadyExists
 
 
 __all__ = [
     'DATABASE',
-    'Country',
-    'State',
     'Address',
     'Company',
     'Department',
@@ -43,83 +42,6 @@ class MDBModel(JSONModel):  # pylint: disable=R0903
         return str(self.id)
 
 
-class Country(MDBModel):
-    """Countries."""
-
-    iso = CharField(2)  # ISO 3166-2 country code
-    name = CharField(64)
-    original_name = CharField(64, null=True)
-
-    def __str__(self):  # pylint: disable=E0307
-        """Converts the country to a string."""
-        return self.name
-
-    def __repr__(self):     # pylint: disable=E0306
-        """Returns the ISO code."""
-        return self.iso
-
-    @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
-        """Finds countries by patterns."""
-        return cls.select().where(
-            (cls.iso ** (pattern := f'%{pattern}%'))
-            | (cls.name ** pattern)
-            | (cls.original_name ** pattern)
-        )
-
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.iso, self.name, self.original_name)
-
-
-class State(MDBModel):
-    """States within countries."""
-
-    country = ForeignKeyField(Country, column_name='country', lazy_load=False,
-                              backref='states')
-    iso = CharField(2)  # ISO 3166-2 state code
-    name = CharField(64)
-
-    def __str__(self):  # pylint: disable=E0307
-        """Returns the country's name."""
-        return self.name
-
-    def __repr__(self):     # pylint: disable=E0306
-        """Returns the ISO code."""
-        return self.iso
-
-    @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
-        """Finds a state by the provided pattern."""
-        try:
-            country = int(pattern)
-        except ValueError:
-            if len(pattern) == 2:
-                return cls.select(cascade=True).where(cls.iso == pattern)
-
-            return cls.select(cascade=True).where(cls.name ** f'%{pattern}%')
-
-        return cls.select(cascade=True).where(cls.country == country)
-
-    @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
-        """Selects states."""
-        if not cascade:
-            return super().select(*args, **kwargs)
-
-        args = {cls, Country, *args}
-        return super().select(*args, **kwargs).join(Country)
-
-    @property
-    def iso3166(self) -> str:
-        """Returns the full ISO 3166-2 compliant code."""
-        return f'{self.country.iso}-{self.iso}'
-
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.country_id, self.iso, self.name)
-
-
 class Address(MDBModel):
     """Address data."""
 
@@ -128,8 +50,7 @@ class Address(MDBModel):
     zip_code = CharField(32)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = ForeignKeyField(State, column_name='state', null=True,
-                            lazy_load=False)
+    state = EnumField(State, null=True)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
@@ -137,8 +58,8 @@ class Address(MDBModel):
 
     @classmethod
     def add(cls, street: str, house_number: str, zip_code: str, city: str, *,
-            state: Optional[Union[State, int]] = None,
-            district: Optional[str] = None) -> Address:
+            district: Optional[str] = None,
+            state: Optional[State] = None) -> Address:
         """Adds an address record to the database."""
         select = (
             (Address.street == street)
@@ -178,25 +99,9 @@ class Address(MDBModel):
         record = super().from_json(json)
 
         if state is not None:
-            try:
-                record.state, *ambiguous = State.find(state)
-            except ValueError:
-                raise State.DoesNotExist() from None
-
-            if ambiguous:
-                raise ValueError('Ambiguous state.')
+            record.state = State.from_string(state)
 
         return record
-
-    @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
-        """Selects addresses."""
-        if not cascade:
-            return super().select(*args, **kwargs)
-
-        return super().select(cls, State, Country, *args, **kwargs).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER)
 
     @property
     def street_houseno(self) -> str:
@@ -285,14 +190,9 @@ class Company(MDBModel):
         if not cascade:
             return super().select(*args, **kwargs)
 
-        args = {cls, Address, State, Country, *args}
+        args = {cls, Address, *args}
         return super().select(*args, **kwargs).join(
-            Address, join_type=JOIN.LEFT_OUTER
-        ).join(
-            State, join_type=JOIN.LEFT_OUTER
-        ).join(
-            Country, join_type=JOIN.LEFT_OUTER
-        )
+            Address, join_type=JOIN.LEFT_OUTER)
 
     @property
     def departments(self) -> set[Department]:
@@ -370,16 +270,11 @@ class Employee(MDBModel):
             return super().select(*args, **kwargs)
 
         personal_address = Address.alias()
-        args = {
-            cls, Company, Address, State, Country, Department,
-            personal_address, *args
-        }
+        args = {cls, Company, Address, Department, personal_address, *args}
         return super().select(*args, **kwargs).join(
             Company).join(
-            Address, join_type=JOIN.LEFT_OUTER).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER
-        ).join_from(cls, Department).join_from(
+            Address, join_type=JOIN.LEFT_OUTER).join_from(
+            cls, Department).join_from(
             cls, personal_address, on=cls.address == personal_address.id,
             join_type=JOIN.LEFT_OUTER
         )
@@ -428,13 +323,9 @@ class Customer(MDBModel):
         if not cascade:
             return super().select(*args, **kwargs)
 
-        args = {cls, Company, Address, State, Country, *args}
+        args = {cls, Company, Address, *args}
         return super().select(*args, **kwargs).join(
-            Company).join(
-            Address, join_type=JOIN.LEFT_OUTER).join(
-            State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER
-        )
+            Company).join(Address, join_type=JOIN.LEFT_OUTER)
 
     @property
     def name(self) -> str:
@@ -485,19 +376,11 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             return super().select(*args, **kwargs)
 
         customer_address = Address.alias()
-        customer_state = State.alias()
-        customer_country = Country.alias()
-        args = {
-            cls, Customer, customer_address, customer_state, customer_country,
-            Company, Address, State, Country, *args
-        }
+        args = {cls, Customer, customer_address, Company, Address, *args}
         return super().select(*args, **kwargs).join(
             Customer).join(Company).join_from(
-            cls, customer_address, join_type=JOIN.LEFT_OUTER).join(
-            customer_state, join_type=JOIN.LEFT_OUTER).join(
-            customer_country, join_type=JOIN.LEFT_OUTER).join_from(
-            cls, Address).join(State, join_type=JOIN.LEFT_OUTER).join(
-            Country, join_type=JOIN.LEFT_OUTER)
+            cls, customer_address, join_type=JOIN.LEFT_OUTER).join_from(
+            cls, Address)
 
     def to_csv(self) -> tuple[Union[int, str]]:
         """Returns a tuple of corresponsing values."""
