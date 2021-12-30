@@ -240,12 +240,12 @@ RANGES = {
 }
 
 STATES = {
-    zip_code: State for state, zip_code_ranges in RANGES.items()
-    for zip_code in chain(*zip_code_ranges)
+    state: set(chain(*zip_code_ranges))
+    for state, zip_code_ranges in RANGES.items()
 }
 
 ZIP_CODES = {
-    zip_code: State for state, zip_codes in STATES.items()
+    zip_code: state for state, zip_codes in STATES.items()
     for zip_code in zip_codes
 }
 
