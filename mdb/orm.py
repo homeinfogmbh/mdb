@@ -9,10 +9,11 @@ from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import ModelSelect
 
-from peeweeplus import EnumField, JSONModel, MySQLDatabaseProxy
+from peeweeplus import JSONModel, MySQLDatabaseProxy
 
 from mdb.enumerations import State
 from mdb.exceptions import AlreadyExists
+from mdb.zip_codes import get_state
 
 
 __all__ = [
@@ -50,7 +51,6 @@ class Address(MDBModel):
     zip_code = CharField(32)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = EnumField(State, use_name=True, null=True)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
@@ -58,8 +58,7 @@ class Address(MDBModel):
 
     @classmethod
     def add(cls, street: str, house_number: str, zip_code: str, city: str, *,
-            district: Optional[str] = None,
-            state: Optional[State] = None) -> Address:
+            district: Optional[str] = None) -> Address:
         """Adds an address record to the database."""
         select = (
             (Address.street == street)
@@ -71,15 +70,13 @@ class Address(MDBModel):
         if district is not None:
             select &= cls.district == district
 
-        if state is not None:
-            select &= cls.state == state
-
         try:
             return Address.get(select)
         except Address.DoesNotExist:
             return Address(
                 city=city, street=street, house_number=house_number,
-                zip_code=zip_code, district=district, state=state)
+                zip_code=zip_code, district=district
+            )
 
 
     @classmethod
@@ -92,16 +89,10 @@ class Address(MDBModel):
             | (cls.city ** pattern)
         )
 
-    @classmethod
-    def from_json(cls, json: dict) -> Address:
-        """Returns an address from the respective dictionary."""
-        state = json.pop('state', None)
-        record = super().from_json(json)
-
-        if state is not None:
-            record.state = State.from_string(state)
-
-        return record
+    @property
+    def state(self) -> State:
+        """Returns the respective state."""
+        return get_state(self.zip_code)
 
     @property
     def street_houseno(self) -> str:
@@ -132,12 +123,6 @@ class Address(MDBModel):
         yield self.street_houseno
         yield self.zip_code_city
 
-        if not self.state:
-            return
-
-        if (country := self.state.country.name) not in GERMANY:
-            yield country
-
     @property
     def text(self) -> str:
         """Converts the Address to a multi-line string."""
@@ -146,7 +131,7 @@ class Address(MDBModel):
     def to_csv(self) -> tuple[str]:
         """Returns a tuple of corresponsing values."""
         return (self.id, self.street, self.house_number, self.zip_code,
-                self.city, self.district, self.state_id)
+                self.city, self.district)
 
 
 class Company(MDBModel):
