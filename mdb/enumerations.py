@@ -1,5 +1,6 @@
 """Common enums."""
 
+from __future__ import annotations
 from enum import Enum
 
 
@@ -25,3 +26,11 @@ class State(Enum):
     ST = 'Sachsen-Anhalt'
     SH = 'Schleswig-Holstein'
     TH = 'Thüringen'
+
+    @classmethod
+    def from_string(cls, value: str) -> State:
+        """Returns a state from a string."""
+        try:
+            return cls[value]
+        except KeyError:
+            return cls(value)
