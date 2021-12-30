@@ -50,7 +50,7 @@ class Address(MDBModel):
     zip_code = CharField(32)
     city = CharField(64)
     district = CharField(64, null=True)
-    state = EnumField(State, null=True)
+    state = EnumField(State, use_name=True, null=True)
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
