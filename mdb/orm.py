@@ -252,17 +252,21 @@ class Employee(MDBModel):
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
+    def select(cls, *args, cascade: bool = False) -> Select:
         """Selects employees."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
         personal_address = Address.alias()
-        args = {cls, Company, Address, Department, personal_address, *args}
-        return super().select(*args, **kwargs).join(
-            Company).join(
-            Address, join_type=JOIN.LEFT_OUTER).join_from(
-            cls, Department).join_from(
+        return super().select(*{
+            cls, Company, Address, Department, personal_address, *args
+        }).join(
+            Company
+        ).join(
+            Address, join_type=JOIN.LEFT_OUTER
+        ).join_from(
+            cls, Department
+        ).join_from(
             cls, personal_address, on=cls.address == personal_address.id,
             join_type=JOIN.LEFT_OUTER
         )
@@ -310,14 +314,18 @@ class Customer(MDBModel):
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
+    def select(cls, *args, cascade: bool = False) -> Select:
         """Selects customers."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
-        args = {cls, Company, Address, *args}
-        return super().select(*args, **kwargs).join(
-            Company).join(Address, join_type=JOIN.LEFT_OUTER)
+        return super().select(*{
+            cls, Company, Address, *args
+        }).join(
+            Company
+        ).join(
+            Address, join_type=JOIN.LEFT_OUTER
+        )
 
     @property
     def name(self) -> str:
@@ -365,17 +373,23 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         return tenement
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
+    def select(cls, *args, cascade: bool = False) -> Select:
         """Selects tenements."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
         customer_address = Address.alias()
-        args = {cls, Customer, customer_address, Company, Address, *args}
-        return super().select(*args, **kwargs).join(
-            Customer).join(Company).join_from(
-            cls, customer_address, join_type=JOIN.LEFT_OUTER).join_from(
-            cls, Address)
+        return super().select(*{
+            cls, Customer, customer_address, Company, Address, *args
+        }).join(
+            Customer
+        ).join(
+            Company
+        ).join_from(
+            cls, customer_address, join_type=JOIN.LEFT_OUTER
+        ).join_from(
+            cls, Address
+        )
 
     def to_csv(self) -> tuple[int, int, int, str, str, str]:
         """Returns a tuple of corresponding values."""
