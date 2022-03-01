@@ -191,10 +191,12 @@ class Company(MDBModel):
 
         return departments
 
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.name, self.abbreviation, self.address_id,
-                self.annotation)
+    def to_csv(self) -> tuple[int, str, str, int, str]:
+        """Returns a tuple of corresponding values."""
+        return (
+            self.id, self.name, self.abbreviation, self.address_id,
+            self.annotation
+        )
 
 
 class Department(MDBModel):
@@ -214,9 +216,9 @@ class Department(MDBModel):
         condition |= cls.type * f'%{pattern}%'
         return cls.select().where(condition)
 
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.name, self.type)
+    def to_csv(self) -> tuple[int, str, str]:
+        """Returns a tuple of corresponding values."""
+        return self.id, self.name, self.type
 
 
 class Employee(MDBModel):
