@@ -240,7 +240,7 @@ RANGES = {
 }
 
 STATES = {
-    state: set(chain(*zip_code_ranges))
+    state: set(chain.from_iterable(zip_code_ranges))
     for state, zip_code_ranges in RANGES.items()
 }
 
