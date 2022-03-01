@@ -81,7 +81,7 @@ class Address(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
-        return cls.select(cascade=True).where(
+        return cls.select().where(
             (cls.street ** (pattern := f'%{pattern}%'))
             | (cls.house_number ** pattern)
             | (cls.zip_code ** pattern)
