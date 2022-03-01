@@ -78,7 +78,6 @@ class Address(MDBModel):
                 zip_code=zip_code, district=district
             )
 
-
     @classmethod
     def find(cls, pattern: str) -> ModelSelect:
         """Finds an address."""
@@ -172,14 +171,14 @@ class Company(MDBModel):
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False) -> ModelSelect:
         """Selects companies."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
-        args = {cls, Address, *args}
-        return super().select(*args, **kwargs).join(
-            Address, join_type=JOIN.LEFT_OUTER)
+        return super().select(*{cls, Address, *args}).join(
+            Address, join_type=JOIN.LEFT_OUTER
+        )
 
     @property
     def departments(self) -> set[Department]:
