@@ -264,11 +264,15 @@ class Employee(MDBModel):
             join_type=JOIN.LEFT_OUTER
         )
 
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.company_id, self.department_id, self.first_name,
-                self.surname, self.phone, self.cellphone, self.email,
-                self.phone_alt, self.fax, self.address_id)
+    def to_csv(self) -> tuple[
+        int, int, int, str, str, str, str, str, str, str, int
+    ]:
+        """Returns a tuple of corresponding values."""
+        return (
+            self.id, self.company_id, self.department_id, self.first_name,
+            self.surname, self.phone, self.cellphone, self.email,
+            self.phone_alt, self.fax, self.address_id
+        )
 
 
 class Customer(MDBModel):
