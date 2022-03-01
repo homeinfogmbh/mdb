@@ -7,7 +7,7 @@ from peewee import JOIN
 from peewee import CharField
 from peewee import ForeignKeyField
 from peewee import IntegerField
-from peewee import ModelSelect
+from peewee import Select
 
 from peeweeplus import JSONModel, MySQLDatabaseProxy
 
@@ -79,7 +79,7 @@ class Address(MDBModel):
             )
 
     @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
+    def find(cls, pattern: str) -> Select:
         """Finds an address."""
         return cls.select().where(
             (cls.street ** (pattern := f'%{pattern}%'))
@@ -163,7 +163,7 @@ class Company(MDBModel):
         raise AlreadyExists(company, name=name)
 
     @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
+    def find(cls, pattern: str) -> Select:
         """Finds companies by primary key or name."""
         condition = cls.name ** f'%{pattern}%'
         condition |= cls.abbreviation ** f'%{pattern}%'
@@ -171,7 +171,7 @@ class Company(MDBModel):
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False) -> Select:
         """Selects companies."""
         if not cascade:
             return super().select(*args)
@@ -209,7 +209,7 @@ class Department(MDBModel):
         return self.name
 
     @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
+    def find(cls, pattern: str) -> Select:
         """Finds a department."""
         condition = cls.name ** f'%{pattern}%'
         condition |= cls.type * f'%{pattern}%'
@@ -245,14 +245,14 @@ class Employee(MDBModel):
         return self.surname
 
     @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
+    def find(cls, pattern: str) -> Select:
         """Finds an employee."""
         condition = cls.surname ** f'%{pattern}%'
         condition |= cls.first_name ** f'%{pattern}%'
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
         """Selects employees."""
         if not cascade:
             return super().select(*args, **kwargs)
@@ -297,7 +297,7 @@ class Customer(MDBModel):
         return str(self.id)
 
     @classmethod
-    def find(cls, pattern: str) -> ModelSelect:
+    def find(cls, pattern: str) -> Select:
         """Finds a customer by the provided pattern."""
         try:
             cid = int(pattern)
@@ -310,7 +310,7 @@ class Customer(MDBModel):
         return cls.select(cascade=True).where(condition)
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
         """Selects customers."""
         if not cascade:
             return super().select(*args, **kwargs)
@@ -365,7 +365,7 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         return tenement
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False, **kwargs) -> Select:
         """Selects tenements."""
         if not cascade:
             return super().select(*args, **kwargs)
