@@ -128,10 +128,12 @@ class Address(MDBModel):
         """Converts the Address to a multi-line string."""
         return '\n'.join(self.lines)
 
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.street, self.house_number, self.zip_code,
-                self.city, self.district)
+    def to_csv(self) -> tuple[int, str, str, str, str, str]:
+        """Returns a tuple of corresponding values."""
+        return (
+            self.id, self.street, self.house_number, self.zip_code,
+            self.city, self.district
+        )
 
 
 class Company(MDBModel):
