@@ -337,8 +337,9 @@ class Customer(MDBModel):
 class Tenement(MDBModel):   # pylint: disable=R0903
     """A tenement."""
 
-    customer = ForeignKeyField(Customer, column_name='customer',
-                               lazy_load=False)
+    customer = ForeignKeyField(
+        Customer, column_name='customer', lazy_load=False
+    )
     address = ForeignKeyField(Address, column_name='address', lazy_load=False)
     rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
     living_unit = CharField(255, null=True)     # Wohneinheit / WE.
