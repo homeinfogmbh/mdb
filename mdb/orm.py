@@ -326,10 +326,12 @@ class Customer(MDBModel):
 
         return json
 
-    def to_csv(self) -> tuple[str]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.company.id, self.company.name, self.reseller_id,
-                self.annotation)
+    def to_csv(self) -> tuple[int, int, str, int, str]:
+        """Returns a tuple of corresponding values."""
+        return (
+            self.id, self.company.id, self.company.name, self.reseller_id,
+            self.annotation
+        )
 
 
 class Tenement(MDBModel):   # pylint: disable=R0903
