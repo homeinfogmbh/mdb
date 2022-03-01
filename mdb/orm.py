@@ -370,7 +370,9 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             cls, customer_address, join_type=JOIN.LEFT_OUTER).join_from(
             cls, Address)
 
-    def to_csv(self) -> tuple[Union[int, str]]:
-        """Returns a tuple of corresponsing values."""
-        return (self.id, self.customer_id, self.address_id, self.rental_unit,
-                self.living_unit, self.annotation)
+    def to_csv(self) -> tuple[int, int, int, str, str, str]:
+        """Returns a tuple of corresponding values."""
+        return (
+            self.id, self.customer_id, self.address_id, self.rental_unit,
+            self.living_unit, self.annotation
+        )
