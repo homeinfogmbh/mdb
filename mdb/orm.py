@@ -397,3 +397,12 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             self.id, self.customer_id, self.address_id, self.rental_unit,
             self.living_unit, self.annotation
         )
+
+    def to_json(self, address: bool = False, **kwargs) -> dict:
+        """Returns a JSON-ish dict."""
+        json = super().to_json(**kwargs)
+
+        if address:
+            json['address'] = self.address.to_json()
+
+        return json
