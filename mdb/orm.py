@@ -345,7 +345,7 @@ class Customer(MDBModel):
 
         return json
 
-    def to_csv(self) -> tuple[int, int, str, int, str]:
+    def to_csv(self) -> tuple[int, int, str, int, str, str]:
         """Returns a tuple of corresponding values."""
         return (
             self.id, self.company.id, self.company.name, self.reseller_id,
