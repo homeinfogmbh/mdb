@@ -139,7 +139,6 @@ class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
-    abbreviation = CharField(32, null=True)
     address = ForeignKeyField(Address, column_name='address', null=True,
                               lazy_load=False)
     annotation = CharField(256, null=True)
@@ -149,16 +148,14 @@ class Company(MDBModel):
         return self.name
 
     @classmethod
-    def add(cls, name: str, abbreviation: str = None,
+    def add(cls, name: str,
             address: Union[Address, int] = None,
             annotation: str = None) -> Company:
         """Adds a new company."""
         try:
             company = cls.get(cls.name == name)
         except cls.DoesNotExist:
-            return cls(
-                name=name, abbreviation=abbreviation, address=address,
-                annotation=annotation)
+            return cls(name=name, address=address, annotation=annotation)
 
         raise AlreadyExists(company, name=name)
 
@@ -166,7 +163,6 @@ class Company(MDBModel):
     def find(cls, pattern: str) -> Select:
         """Finds companies by primary key or name."""
         condition = cls.name ** f'%{pattern}%'
-        condition |= cls.abbreviation ** f'%{pattern}%'
         condition |= cls.annotation ** f'%{pattern}%'
         return cls.select(cascade=True).where(condition)
 
@@ -190,12 +186,9 @@ class Company(MDBModel):
 
         return departments
 
-    def to_csv(self) -> tuple[int, str, str, int, str]:
+    def to_csv(self) -> tuple[int, str, int, str]:
         """Returns a tuple of corresponding values."""
-        return (
-            self.id, self.name, self.abbreviation, self.address_id,
-            self.annotation
-        )
+        return self.id, self.name, self.address_id, self.annotation
 
 
 class Department(MDBModel):
