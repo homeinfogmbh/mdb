@@ -95,7 +95,7 @@ class Address(MDBModel):
 
     @property
     def street_houseno(self) -> str:
-        """Returns street and hounse number."""
+        """Returns street and house number."""
         return f'{self.street} {self.house_number}'
 
     @property
