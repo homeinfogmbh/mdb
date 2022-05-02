@@ -258,9 +258,9 @@ class Employee(MDBModel):
             return super().select(*args)
 
         personal_address = Address.alias()
-        return super().select(*{
+        return super().select(
             cls, Company, Address, Department, personal_address, *args
-        }).join(
+        ).join(
             Company
         ).join(
             Address, join_type=JOIN.LEFT_OUTER
@@ -323,11 +323,7 @@ class Customer(MDBModel):
         if not cascade:
             return super().select(*args)
 
-        return super().select(*{
-            cls, Company, Address, *args
-        }).join(
-            Company
-        ).join(
+        return super().select(cls, Company, Address, *args).join(Company).join(
             Address, join_type=JOIN.LEFT_OUTER
         )
 
@@ -383,9 +379,9 @@ class Tenement(MDBModel):   # pylint: disable=R0903
             return super().select(*args)
 
         customer_address = Address.alias()
-        return super().select(*{
+        return super().select(
             cls, Customer, customer_address, Company, Address, *args
-        }).join(
+        ).join(
             Customer
         ).join(
             Company
