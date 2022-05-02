@@ -307,7 +307,7 @@ class Customer(MDBModel):
         try:
             cid = int(pattern)
         except ValueError:
-            condition = Company.abbreviation ** pattern
+            condition = cls.abbreviation ** pattern
             condition |= Company.name ** f'%{pattern}%'
         else:
             condition = Customer.id == cid
@@ -346,7 +346,7 @@ class Customer(MDBModel):
         """Returns a tuple of corresponding values."""
         return (
             self.id, self.company.id, self.company.name, self.reseller_id,
-            self.annotation
+            self.abbreviation, self.annotation
         )
 
 
