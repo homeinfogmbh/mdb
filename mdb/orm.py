@@ -31,10 +31,10 @@ DATABASE = MySQLDatabaseProxy('mdb')
 GERMANY = {'Deutschland', 'Germany', 'DE'}
 
 
-class MDBModel(JSONModel):  # pylint: disable=R0903
+class MDBModel(JSONModel):
     """Generic HOMEINFO MDB Model."""
 
-    class Meta:     # pylint: disable=C0111,R0903
+    class Meta:
         database = DATABASE
         schema = database.database
 
@@ -223,10 +223,12 @@ class Department(MDBModel):
 class Employee(MDBModel):
     """Employees."""
 
-    company = ForeignKeyField(Company, column_name='company',
-                              backref='employees', lazy_load=False)
-    department = ForeignKeyField(Department, column_name='department',
-                                 backref='staff', lazy_load=False)
+    company = ForeignKeyField(
+        Company, column_name='company', backref='employees', lazy_load=False
+    )
+    department = ForeignKeyField(
+        Department, column_name='department', backref='staff', lazy_load=False
+    )
     first_name = CharField(32, null=True)
     surname = CharField(32)
     phone = CharField(32, null=True)
@@ -234,8 +236,9 @@ class Employee(MDBModel):
     email = CharField(64, null=True)
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
-    address = ForeignKeyField(Address, column_name='address', null=True,
-                              lazy_load=False)
+    address = ForeignKeyField(
+        Address, column_name='address', null=True, lazy_load=False
+    )
 
     def __str__(self):
         """Returns the employee's name."""
@@ -286,10 +289,13 @@ class Customer(MDBModel):
     """CRM's customer(s)."""
 
     id = IntegerField(primary_key=True)
-    company = ForeignKeyField(Company, column_name='company', lazy_load=False,
-                              backref='customers')
-    reseller = ForeignKeyField('self', column_name='reseller', lazy_load=False,
-                               null=True, backref='resellees')
+    company = ForeignKeyField(
+        Company, column_name='company', lazy_load=False, backref='customers'
+    )
+    reseller = ForeignKeyField(
+        'self', column_name='reseller', lazy_load=False, null=True,
+        backref='resellees'
+    )
     abbreviation = CharField(16)
     annotation = CharField(255, null=True)
 
