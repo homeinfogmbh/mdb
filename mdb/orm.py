@@ -57,8 +57,14 @@ class Address(MDBModel):
         return self.oneliner or ''
 
     @classmethod
-    def add(cls, street: str, house_number: str, zip_code: str, city: str, *,
-            district: Optional[str] = None) -> Address:
+    def add(
+            cls,
+            street: str,
+            house_number: str,
+            zip_code: str,
+            city: str, *,
+            district: Optional[str] = None
+    ) -> Address:
         """Adds an address record to the database."""
         select = (
             (Address.street == street)
