@@ -139,18 +139,22 @@ class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
-    address = ForeignKeyField(Address, column_name='address', null=True,
-                              lazy_load=False)
+    address = ForeignKeyField(
+        Address, column_name='address', null=True, lazy_load=False
+    )
     annotation = CharField(256, null=True)
 
-    def __str__(self):  # pylint: disable=E0307
+    def __str__(self):
         """Returns the company's name."""
         return self.name
 
     @classmethod
-    def add(cls, name: str,
+    def add(
+            cls,
+            name: str,
             address: Union[Address, int] = None,
-            annotation: str = None) -> Company:
+            annotation: Optional[str] = None
+    ) -> Company:
         """Adds a new company."""
         try:
             company = cls.get(cls.name == name)
@@ -172,7 +176,7 @@ class Company(MDBModel):
         if not cascade:
             return super().select(*args)
 
-        return super().select(*{cls, Address, *args}).join(
+        return super().select(cls, Address, *args).join(
             Address, join_type=JOIN.LEFT_OUTER
         )
 
@@ -197,7 +201,7 @@ class Department(MDBModel):
     name = CharField(64)
     type = CharField(64, null=True)
 
-    def __str__(self):  # pylint: disable=E0307
+    def __str__(self):
         """Returns the department's name."""
         return self.name
 
