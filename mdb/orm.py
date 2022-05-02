@@ -290,6 +290,7 @@ class Customer(MDBModel):
                               backref='customers')
     reseller = ForeignKeyField('self', column_name='reseller', lazy_load=False,
                                null=True, backref='resellees')
+    abbreviation = CharField(16)
     annotation = CharField(255, null=True)
 
     def __str__(self):
