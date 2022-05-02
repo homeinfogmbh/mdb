@@ -260,9 +260,7 @@ class Employee(MDBModel):
         personal_address = Address.alias()
         return super().select(
             cls, Company, Address, Department, personal_address, *args
-        ).join(
-            Company
-        ).join(
+        ).join(Company).join(
             Address, join_type=JOIN.LEFT_OUTER
         ).join_from(
             cls, Department
@@ -349,7 +347,7 @@ class Customer(MDBModel):
         )
 
 
-class Tenement(MDBModel):   # pylint: disable=R0903
+class Tenement(MDBModel):
     """A tenement."""
 
     customer = ForeignKeyField(
@@ -361,9 +359,13 @@ class Tenement(MDBModel):   # pylint: disable=R0903
     annotation = CharField(255, null=True)
 
     @classmethod
-    def from_json(  # pylint: disable=W0621
-            cls, json: dict, customer: Union[Customer, int],
-            address: Union[Address, int], **kwargs) -> Tenement:
+    def from_json(
+            cls,
+            json: dict,
+            customer: Union[Customer, int],
+            address: Union[Address, int],
+            **kwargs
+    ) -> Tenement:
         """Returns a new tenement from a JSON-ish
         dict for the specified customer.
         """
@@ -381,15 +383,9 @@ class Tenement(MDBModel):   # pylint: disable=R0903
         customer_address = Address.alias()
         return super().select(
             cls, Customer, customer_address, Company, Address, *args
-        ).join(
-            Customer
-        ).join(
-            Company
-        ).join_from(
+        ).join(Customer).join(Company).join_from(
             cls, customer_address, join_type=JOIN.LEFT_OUTER
-        ).join_from(
-            cls, Address
-        )
+        ).join_from(cls, Address)
 
     def to_csv(self) -> tuple[int, int, int, str, str, str]:
         """Returns a tuple of corresponding values."""
