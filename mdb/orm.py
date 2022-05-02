@@ -139,7 +139,7 @@ class Company(MDBModel):
     """Represents companies HOMEINFO has relations to."""
 
     name = CharField(255)
-    abbreviation = CharField(16, null=True)
+    abbreviation = CharField(32, null=True)
     address = ForeignKeyField(Address, column_name='address', null=True,
                               lazy_load=False)
     annotation = CharField(256, null=True)
@@ -296,7 +296,7 @@ class Customer(MDBModel):
         'self', column_name='reseller', lazy_load=False, null=True,
         backref='resellees'
     )
-    abbreviation = CharField(16)
+    abbreviation = CharField(32)
     annotation = CharField(255, null=True)
 
     def __str__(self):
