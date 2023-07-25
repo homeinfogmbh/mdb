@@ -3,7 +3,7 @@
 from mdb.orm import Customer
 
 
-__all__ = ['customer']
+__all__ = ["customer"]
 
 
 def customer(string: str) -> Customer:
@@ -12,9 +12,9 @@ def customer(string: str) -> Customer:
     try:
         match, *excess = Customer.find(string)
     except ValueError:
-        raise ValueError('No such customer.') from None
+        raise ValueError("No such customer.") from None
 
     if excess:
-        raise ValueError('Ambiguous customer selection.')
+        raise ValueError("Ambiguous customer selection.")
 
     return match

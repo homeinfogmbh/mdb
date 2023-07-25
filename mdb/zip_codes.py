@@ -6,7 +6,7 @@ from typing import Union
 from mdb.enumerations import State
 
 
-__all__ = ['RANGES', 'STATES', 'ZIP_CODES', 'get_state']
+__all__ = ["RANGES", "STATES", "ZIP_CODES", "get_state"]
 
 
 def zip_code_range(start: int, end: int) -> range:
@@ -28,7 +28,7 @@ RANGES = {
         zip_code_range(7952, 7952),
         zip_code_range(7982, 7982),
         zip_code_range(7985, 7985),
-        zip_code_range(8001, 9669)
+        zip_code_range(8001, 9669),
     ],
     State.BB: [
         zip_code_range(1941, 1998),
@@ -43,7 +43,7 @@ RANGES = {
         zip_code_range(17326, 17326),
         zip_code_range(17335, 17335),
         zip_code_range(17337, 17337),
-        zip_code_range(19307, 19357)
+        zip_code_range(19307, 19357),
     ],
     State.TH: [
         zip_code_range(4581, 4639),
@@ -58,7 +58,7 @@ RANGES = {
         zip_code_range(36401, 36469),
         zip_code_range(37301, 37359),
         zip_code_range(96501, 96529),
-        zip_code_range(98501, 99998)
+        zip_code_range(98501, 99998),
     ],
     State.ST: [
         zip_code_range(6001, 6548),
@@ -66,11 +66,9 @@ RANGES = {
         zip_code_range(14715, 14715),
         zip_code_range(29401, 29416),
         zip_code_range(38481, 38489),
-        zip_code_range(38801, 39649)
+        zip_code_range(38801, 39649),
     ],
-    State.BE: [
-        zip_code_range(10001, 14330)
-    ],
+    State.BE: [zip_code_range(10001, 14330)],
     State.MV: [
         zip_code_range(17001, 17256),
         zip_code_range(17258, 17259),
@@ -83,7 +81,7 @@ RANGES = {
         zip_code_range(19273, 19273),
         zip_code_range(19273, 19306),
         zip_code_range(19357, 19417),
-        zip_code_range(23921, 23999)
+        zip_code_range(23921, 23999),
     ],
     State.NI: [
         zip_code_range(19271, 19273),
@@ -107,7 +105,7 @@ RANGES = {
         zip_code_range(48486, 48488),
         zip_code_range(48497, 48531),
         zip_code_range(49001, 49459),
-        zip_code_range(49551, 49849)
+        zip_code_range(49551, 49849),
     ],
     State.HH: [
         zip_code_range(20001, 21037),
@@ -116,7 +114,7 @@ RANGES = {
         zip_code_range(22115, 22143),
         zip_code_range(22145, 22145),
         zip_code_range(22147, 22786),
-        zip_code_range(27499, 27499)
+        zip_code_range(27499, 27499),
     ],
     State.SH: [
         zip_code_range(21039, 21039),
@@ -127,12 +125,9 @@ RANGES = {
         zip_code_range(22145, 22145),
         zip_code_range(22801, 23919),
         zip_code_range(24001, 25999),
-        zip_code_range(27483, 27498)
+        zip_code_range(27483, 27498),
     ],
-    State.HB: [
-        zip_code_range(27501, 27580),
-        zip_code_range(28001, 28779)
-    ],
+    State.HB: [zip_code_range(27501, 27580), zip_code_range(28001, 28779)],
     State.NW: [
         zip_code_range(32001, 33829),
         zip_code_range(34401, 34439),
@@ -150,7 +145,7 @@ RANGES = {
         zip_code_range(53621, 53949),
         zip_code_range(57001, 57489),
         zip_code_range(58001, 59966),
-        zip_code_range(59969, 59969)
+        zip_code_range(59969, 59969),
     ],
     State.HE: [
         zip_code_range(34001, 34329),
@@ -177,7 +172,7 @@ RANGES = {
         zip_code_range(69434, 69434),
         zip_code_range(69479, 69488),
         zip_code_range(69503, 69509),
-        zip_code_range(69515, 69518)
+        zip_code_range(69515, 69518),
     ],
     State.RP: [
         zip_code_range(51598, 51598),
@@ -193,7 +188,7 @@ RANGES = {
         zip_code_range(65629, 65629),
         zip_code_range(66461, 66509),
         zip_code_range(66841, 67829),
-        zip_code_range(76711, 76891)
+        zip_code_range(76711, 76891),
     ],
     State.BY: [
         zip_code_range(63701, 63774),
@@ -212,7 +207,7 @@ RANGES = {
         zip_code_range(97001, 97859),
         zip_code_range(97888, 97892),
         zip_code_range(97896, 97896),
-        zip_code_range(97901, 97909)
+        zip_code_range(97901, 97909),
     ],
     State.BW: [
         zip_code_range(63928, 63928),
@@ -237,12 +232,9 @@ RANGES = {
         zip_code_range(97861, 97877),
         zip_code_range(97893, 97896),
         zip_code_range(97897, 97900),
-        zip_code_range(97911, 97999)
+        zip_code_range(97911, 97999),
     ],
-    State.SL: [
-        zip_code_range(66001, 66459),
-        zip_code_range(66511, 66839)
-    ]
+    State.SL: [zip_code_range(66001, 66459), zip_code_range(66511, 66839)],
 }
 
 STATES = {
@@ -251,8 +243,7 @@ STATES = {
 }
 
 ZIP_CODES = {
-    zip_code: state for state, zip_codes in STATES.items()
-    for zip_code in zip_codes
+    zip_code: state for state, zip_codes in STATES.items() for zip_code in zip_codes
 }
 
 

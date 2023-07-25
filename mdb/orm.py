@@ -17,18 +17,18 @@ from mdb.zip_codes import get_state
 
 
 __all__ = [
-    'DATABASE',
-    'Address',
-    'Company',
-    'Department',
-    'Employee',
-    'Customer',
-    'Tenement'
+    "DATABASE",
+    "Address",
+    "Company",
+    "Department",
+    "Employee",
+    "Customer",
+    "Tenement",
 ]
 
 
-DATABASE = MySQLDatabaseProxy('mdb')
-GERMANY = {'Deutschland', 'Germany', 'DE'}
+DATABASE = MySQLDatabaseProxy("mdb")
+GERMANY = {"Deutschland", "Germany", "DE"}
 
 
 class MDBModel(JSONModel):
@@ -54,16 +54,17 @@ class Address(MDBModel):
 
     def __str__(self):
         """Returns the oneliner or an empty string."""
-        return self.oneliner or ''
+        return self.oneliner or ""
 
     @classmethod
     def add(
-            cls,
-            street: str,
-            house_number: str,
-            zip_code: str,
-            city: str, *,
-            district: Optional[str] = None
+        cls,
+        street: str,
+        house_number: str,
+        zip_code: str,
+        city: str,
+        *,
+        district: Optional[str] = None,
     ) -> Address:
         """Adds an address record to the database."""
         select = (
@@ -80,18 +81,21 @@ class Address(MDBModel):
             return Address.get(select)
         except Address.DoesNotExist:
             return Address(
-                city=city, street=street, house_number=house_number,
-                zip_code=zip_code, district=district
+                city=city,
+                street=street,
+                house_number=house_number,
+                zip_code=zip_code,
+                district=district,
             )
 
     @classmethod
     def find(cls, pattern: str) -> Select:
         """Finds an address."""
         return cls.select().where(
-            (cls.street ** (pattern := f'%{pattern}%'))
-            | (cls.house_number ** pattern)
-            | (cls.zip_code ** pattern)
-            | (cls.city ** pattern)
+            (cls.street ** (pattern := f"%{pattern}%"))
+            | (cls.house_number**pattern)
+            | (cls.zip_code**pattern)
+            | (cls.city**pattern)
         )
 
     @property
@@ -102,25 +106,25 @@ class Address(MDBModel):
     @property
     def street_houseno(self) -> str:
         """Returns street and house number."""
-        return f'{self.street} {self.house_number}'
+        return f"{self.street} {self.house_number}"
 
     @property
     def city_district(self) -> str:
         """Returns the city and district."""
         if self.district:
-            return f'{self.city} - {self.district}'
+            return f"{self.city} - {self.district}"
 
         return self.city
 
     @property
     def zip_code_city(self) -> str:
         """Returns ZIP code and city."""
-        return f'{self.zip_code} {self.city_district}'
+        return f"{self.zip_code} {self.city_district}"
 
     @property
     def oneliner(self) -> str:
         """Returns a one-liner string."""
-        return f'{self.street_houseno}, {self.zip_code_city}'
+        return f"{self.street_houseno}, {self.zip_code_city}"
 
     @property
     def lines(self) -> Iterator[str]:
@@ -131,13 +135,17 @@ class Address(MDBModel):
     @property
     def text(self) -> str:
         """Converts the Address to a multi-line string."""
-        return '\n'.join(self.lines)
+        return "\n".join(self.lines)
 
     def to_csv(self) -> tuple[int, str, str, str, str, str]:
         """Returns a tuple of corresponding values."""
         return (
-            self.id, self.street, self.house_number, self.zip_code,
-            self.city, self.district
+            self.id,
+            self.street,
+            self.house_number,
+            self.zip_code,
+            self.city,
+            self.district,
         )
 
 
@@ -146,7 +154,7 @@ class Company(MDBModel):
 
     name = CharField(255)
     address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False
+        Address, column_name="address", null=True, lazy_load=False
     )
     annotation = CharField(256, null=True)
 
@@ -156,10 +164,10 @@ class Company(MDBModel):
 
     @classmethod
     def add(
-            cls,
-            name: str,
-            address: Union[Address, int] = None,
-            annotation: Optional[str] = None
+        cls,
+        name: str,
+        address: Union[Address, int] = None,
+        annotation: Optional[str] = None,
     ) -> Company:
         """Adds a new company."""
         try:
@@ -172,8 +180,8 @@ class Company(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> Select:
         """Finds companies by primary key or name."""
-        condition = cls.name ** f'%{pattern}%'
-        condition |= cls.annotation ** f'%{pattern}%'
+        condition = cls.name ** f"%{pattern}%"
+        condition |= cls.annotation ** f"%{pattern}%"
         return cls.select(cascade=True).where(condition)
 
     @classmethod
@@ -182,8 +190,8 @@ class Company(MDBModel):
         if not cascade:
             return super().select(*args)
 
-        return super().select(cls, Address, *args).join(
-            Address, join_type=JOIN.LEFT_OUTER
+        return (
+            super().select(cls, Address, *args).join(Address, join_type=JOIN.LEFT_OUTER)
         )
 
     @property
@@ -214,8 +222,8 @@ class Department(MDBModel):
     @classmethod
     def find(cls, pattern: str) -> Select:
         """Finds a department."""
-        condition = cls.name ** f'%{pattern}%'
-        condition |= cls.type * f'%{pattern}%'
+        condition = cls.name ** f"%{pattern}%"
+        condition |= cls.type * f"%{pattern}%"
         return cls.select().where(condition)
 
     def to_csv(self) -> tuple[int, str, str]:
@@ -227,10 +235,10 @@ class Employee(MDBModel):
     """Employees."""
 
     company = ForeignKeyField(
-        Company, column_name='company', backref='employees', lazy_load=False
+        Company, column_name="company", backref="employees", lazy_load=False
     )
     department = ForeignKeyField(
-        Department, column_name='department', backref='staff', lazy_load=False
+        Department, column_name="department", backref="staff", lazy_load=False
     )
     first_name = CharField(32, null=True)
     surname = CharField(32)
@@ -240,21 +248,21 @@ class Employee(MDBModel):
     phone_alt = CharField(32, null=True)
     fax = CharField(32, null=True)
     address = ForeignKeyField(
-        Address, column_name='address', null=True, lazy_load=False
+        Address, column_name="address", null=True, lazy_load=False
     )
 
     def __str__(self):
         """Returns the employee's name."""
         if self.first_name is not None:
-            return f'{self.first_name} {self.surname}'
+            return f"{self.first_name} {self.surname}"
 
         return self.surname
 
     @classmethod
     def find(cls, pattern: str) -> Select:
         """Finds an employee."""
-        condition = cls.surname ** f'%{pattern}%'
-        condition |= cls.first_name ** f'%{pattern}%'
+        condition = cls.surname ** f"%{pattern}%"
+        condition |= cls.first_name ** f"%{pattern}%"
         return cls.select(cascade=True).where(condition)
 
     @classmethod
@@ -264,25 +272,34 @@ class Employee(MDBModel):
             return super().select(*args)
 
         personal_address = Address.alias()
-        return super().select(
-            cls, Company, Address, Department, personal_address, *args
-        ).join(Company).join(
-            Address, join_type=JOIN.LEFT_OUTER
-        ).join_from(
-            cls, Department
-        ).join_from(
-            cls, personal_address, on=cls.address == personal_address.id,
-            join_type=JOIN.LEFT_OUTER
+        return (
+            super()
+            .select(cls, Company, Address, Department, personal_address, *args)
+            .join(Company)
+            .join(Address, join_type=JOIN.LEFT_OUTER)
+            .join_from(cls, Department)
+            .join_from(
+                cls,
+                personal_address,
+                on=cls.address == personal_address.id,
+                join_type=JOIN.LEFT_OUTER,
+            )
         )
 
-    def to_csv(self) -> tuple[
-        int, int, int, str, str, str, str, str, str, str, int
-    ]:
+    def to_csv(self) -> tuple[int, int, int, str, str, str, str, str, str, str, int]:
         """Returns a tuple of corresponding values."""
         return (
-            self.id, self.company_id, self.department_id, self.first_name,
-            self.surname, self.phone, self.cellphone, self.email,
-            self.phone_alt, self.fax, self.address_id
+            self.id,
+            self.company_id,
+            self.department_id,
+            self.first_name,
+            self.surname,
+            self.phone,
+            self.cellphone,
+            self.email,
+            self.phone_alt,
+            self.fax,
+            self.address_id,
         )
 
 
@@ -291,11 +308,10 @@ class Customer(MDBModel):
 
     id = IntegerField(primary_key=True)
     company = ForeignKeyField(
-        Company, column_name='company', lazy_load=False, backref='customers'
+        Company, column_name="company", lazy_load=False, backref="customers"
     )
     reseller = ForeignKeyField(
-        'self', column_name='reseller', lazy_load=False, null=True,
-        backref='resellees'
+        "self", column_name="reseller", lazy_load=False, null=True, backref="resellees"
     )
     abbreviation = CharField(32)
     annotation = CharField(255, null=True)
@@ -314,8 +330,8 @@ class Customer(MDBModel):
         try:
             cid = int(pattern)
         except ValueError:
-            condition = cls.abbreviation ** pattern
-            condition |= Company.name ** f'%{pattern}%'
+            condition = cls.abbreviation**pattern
+            condition |= Company.name ** f"%{pattern}%"
         else:
             condition = Customer.id == cid
 
@@ -327,8 +343,11 @@ class Customer(MDBModel):
         if not cascade:
             return super().select(*args)
 
-        return super().select(cls, Company, Address, *args).join(Company).join(
-            Address, join_type=JOIN.LEFT_OUTER
+        return (
+            super()
+            .select(cls, Company, Address, *args)
+            .join(Company)
+            .join(Address, join_type=JOIN.LEFT_OUTER)
         )
 
     @property
@@ -341,36 +360,38 @@ class Customer(MDBModel):
         json = super().to_json(**kwargs)
 
         if company:
-            json['company'] = self.company.to_json(**kwargs)
+            json["company"] = self.company.to_json(**kwargs)
 
         return json
 
     def to_csv(self) -> tuple[int, int, str, int, str, str]:
         """Returns a tuple of corresponding values."""
         return (
-            self.id, self.company.id, self.company.name, self.reseller_id,
-            self.abbreviation, self.annotation
+            self.id,
+            self.company.id,
+            self.company.name,
+            self.reseller_id,
+            self.abbreviation,
+            self.annotation,
         )
 
 
 class Tenement(MDBModel):
     """A tenement."""
 
-    customer = ForeignKeyField(
-        Customer, column_name='customer', lazy_load=False
-    )
-    address = ForeignKeyField(Address, column_name='address', lazy_load=False)
-    rental_unit = CharField(255, null=True)     # Mieteinheit / ME.
-    living_unit = CharField(255, null=True)     # Wohneinheit / WE.
+    customer = ForeignKeyField(Customer, column_name="customer", lazy_load=False)
+    address = ForeignKeyField(Address, column_name="address", lazy_load=False)
+    rental_unit = CharField(255, null=True)  # Mieteinheit / ME.
+    living_unit = CharField(255, null=True)  # Wohneinheit / WE.
     annotation = CharField(255, null=True)
 
     @classmethod
     def from_json(
-            cls,
-            json: dict,
-            customer: Union[Customer, int],
-            address: Union[Address, int],
-            **kwargs
+        cls,
+        json: dict,
+        customer: Union[Customer, int],
+        address: Union[Address, int],
+        **kwargs,
     ) -> Tenement:
         """Returns a new tenement from a JSON-ish
         dict for the specified customer.
@@ -387,17 +408,24 @@ class Tenement(MDBModel):
             return super().select(*args)
 
         customer_address = Address.alias()
-        return super().select(
-            cls, Customer, customer_address, Company, Address, *args
-        ).join(Customer).join(Company).join_from(
-            cls, customer_address, join_type=JOIN.LEFT_OUTER
-        ).join_from(cls, Address)
+        return (
+            super()
+            .select(cls, Customer, customer_address, Company, Address, *args)
+            .join(Customer)
+            .join(Company)
+            .join_from(cls, customer_address, join_type=JOIN.LEFT_OUTER)
+            .join_from(cls, Address)
+        )
 
     def to_csv(self) -> tuple[int, int, int, str, str, str]:
         """Returns a tuple of corresponding values."""
         return (
-            self.id, self.customer_id, self.address_id, self.rental_unit,
-            self.living_unit, self.annotation
+            self.id,
+            self.customer_id,
+            self.address_id,
+            self.rental_unit,
+            self.living_unit,
+            self.annotation,
         )
 
     def to_json(self, address: bool = False, **kwargs) -> dict:
@@ -405,6 +433,6 @@ class Tenement(MDBModel):
         json = super().to_json(**kwargs)
 
         if address:
-            json['address'] = self.address.to_json()
+            json["address"] = self.address.to_json()
 
         return json

@@ -14,18 +14,18 @@ from mdb.zip_codes import RANGES, STATES, ZIP_CODES, get_state
 
 
 __all__ = [
-    'DATABASE',
-    'RANGES',
-    'STATES',
-    'ZIP_CODES',
-    'AlreadyExists',
-    'Address',
-    'Company',
-    'Customer',
-    'Department',
-    'Employee',
-    'State',
-    'Tenement',
-    'customer',
-    'get_state'
+    "DATABASE",
+    "RANGES",
+    "STATES",
+    "ZIP_CODES",
+    "AlreadyExists",
+    "Address",
+    "Company",
+    "Customer",
+    "Department",
+    "Employee",
+    "State",
+    "Tenement",
+    "customer",
+    "get_state",
 ]

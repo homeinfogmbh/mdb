@@ -3,7 +3,7 @@
 from peewee import Model
 
 
-__all__ = ['AlreadyExists']
+__all__ = ["AlreadyExists"]
 
 
 class AlreadyExists(Exception):
@@ -18,6 +18,6 @@ class AlreadyExists(Exception):
         record_name = type(self.record).__name__
 
         if self.keys:
-            return f'{record_name} already exists for {self.keys}.'
+            return f"{record_name} already exists for {self.keys}."
 
-        return f'{record_name} already exists.'
+        return f"{record_name} already exists."
